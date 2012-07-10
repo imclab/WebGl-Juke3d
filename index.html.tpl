@@ -31,7 +31,7 @@
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 				
-				JUKEJS.run( container );
+				window.jukeentry( container );
 				
 			}
 

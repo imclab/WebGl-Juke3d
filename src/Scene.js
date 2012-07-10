@@ -1,4 +1,4 @@
-
+//2
 JUKEJS.Scene = function( container ) {
 
 	this.container = container;

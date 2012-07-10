@@ -1,3 +1,5 @@
+//1
+
 var JUKEJS = JUKEJS || {};
 
 //config
@@ -7,7 +9,8 @@ JUKEJS.Config.basePath = "./";
 JUKEJS.Config.assetsPath = JUKEJS.Config.basePath + "assets/";
 
 
-JUKEJS.run = function( container ) {
+// Entry point
+window["jukeentry"] = function( container ) {
 
 	var scene = new JUKEJS.Scene( container );
 	scene.play(); 
