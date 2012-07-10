@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     9 juil. 2012 13:47:00                                                        
+
+     JukeJs build    
+     build all
+                   
+     lepersp                                                                
+     ====================================================================== -->
+<project name="JukeJs build" default="main" basedir="../">
+	<description>
+            build all
+    </description>
+
+	<taskdef name="jscomp"
+	         classname="com.google.javascript.jscomp.ant.CompileTask"
+	         classpath="${basedir}/build/libs/compiler/compiler.jar" />
+
+	<!-- ================================= 
+          target: main              
+         ================================= -->
+	<target name="main" depends="init" description="build all">
+		<antcall target="build html" />
+		<antcall target="compile js" />
+	</target>
+
+	
+	<!-- ================================= 
+          target: build html              
+         ================================= -->
+    <target name="build html" description="generate html pages">
+    	
+    	<fileset dir="${basedir}\src" id="js_sources" > 
+	        <include name="jukejs.js"/>
+	        <include name="Scene.js"/>
+	        <include name="AWDloader.js"/>
+	     </fileset> 
+    		
+    	
+    	<pathconvert property="jsfiles" pathsep="${line.separator}" dirsep="/"> 
+    		<sort>
+    			<fileset refid="js_sources"/>
+	    	</sort>
+    		<mapper>
+    			
+    			<globmapper from="${basedir}\src\*" to="&lt;script src='./js/sources/*'&gt;&lt;/script&gt;">
+    			</globmapper>
+    		</mapper>
+	    </pathconvert> 
+	    
+	    <echo>${jsfiles}</echo> 
+    	
+        <copy file="${basedir}/index.html.tpl" tofile="${basedir}/bin/index_orig.html" overwrite="true">
+        	<filterchain>
+        		<replacetokens>
+        			<token key="JSIMPORTS" value="${jsfiles}"/>
+        		</replacetokens>
+        	</filterchain>
+    	</copy>
+
+    	<copy file="${basedir}/index.html.tpl" tofile="${basedir}/bin/index_compress.html" overwrite="true">
+        	<filterchain>
+        		<replacetokens>
+        			<token key="JSIMPORTS" value="&lt;script src='./js/juke.js'&gt;&lt;/script&gt;"/>
+        		</replacetokens>
+        	</filterchain>
+    	</copy>
+    	
+    	
+    	<copy todir="${basedir}/bin/js/sources" preservelastmodified="true">
+    		<fileset refid="js_sources"/>
+    	</copy>
+    	
+    </target>
+
+	<!-- ================================= 
+          target: closure              
+         ================================= -->
+	<target name="compile js" description="compile js sources">
+
+		<jscomp compilationLevel="simple"
+		        warning="quiet"
+		        debug="true"
+				prettyprint="true"
+		        output="js/juke.js">
+
+			<externs dir="${basedir}/bin/js">
+				<file name="Three.js" />
+			</externs>
+
+			<sources dir="${basedir}/src">
+				<file name="jukejs.js" />
+				<file name="Scene.js" />
+				<file name="AWDLoader.js" />
+			</sources>
+
+		</jscomp>
+		
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: init                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="init">
+	</target>
+
+</project>
