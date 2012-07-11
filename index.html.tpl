@@ -16,7 +16,7 @@
 	</head>
 
 	<body>
-		<script src="./js/Three.js"></script>
+		<script src="./js/ThreeDebug.js"></script>
 
 		@JSIMPORTS@
 

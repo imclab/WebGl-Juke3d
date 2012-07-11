@@ -19,7 +19,7 @@ JUKEJS.AWDLoader = function ( showStatus ) {
 	this._cur_block_id = 0x00000000;
 
 	this._blocks = new Array();//AWDBlock
-	this._blocks[0] = new JUKEJS.AWDBlock();
+	this._blocks[0] = new AWDBlock();
 	this._blocks[0].data = null;
 
 };
@@ -61,6 +61,7 @@ JUKEJS.AWDLoader.prototype.parse = function ( data ) {
 
 	this._data = new DataView( data );
 	var blen = data.byteLength;
+	this._ptr = 0;
 
 	this._parseHeader( );
 	if (!this._streaming && this._bodylen != data.byteLength - this._ptr ) {
@@ -80,11 +81,14 @@ JUKEJS.AWDLoader.prototype.parseNextBlock = function ( ) {
 
 	var assetData;
 	var ns, type, len;
-	_cur_block_id = this.readU32();
+	this._cur_block_id = this.readU32();
 
 	ns = this.readU8();
 	type = this.readU8();
 	len = this.readU32();
+
+	console.log( "AWDloader.js in block type - len : " , type , len);
+	var posExpected = this._ptr + len;
 
 	switch (type) {
 		case 1:
@@ -116,14 +120,17 @@ JUKEJS.AWDLoader.prototype.parseNextBlock = function ( ) {
 		// 	break;
 		default:
 			//trace('Ignoring block!');
-			_ptr += len;
+			this._ptr += len;
 			break;
 	}
 
+	console.log( "AWDloader.js in block parsed - ptr : " , this._ptr, "expected " , posExpected);
+
+
 	// Store block reference for later use
-	_blocks[_cur_block_id] = new AWDBlock();
-	_blocks[_cur_block_id].data = assetData;
-	_blocks[_cur_block_id].id = _cur_block_id;
+	this._blocks[this._cur_block_id] = new AWDBlock();
+	this._blocks[this._cur_block_id].data = assetData;
+	this._blocks[this._cur_block_id].id = this._cur_block_id;
 
 }
 
@@ -174,106 +181,147 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 	var props;
 	var bsm;
 
+	var face;
+	var vector;
+	var uv;
+
 	// Read name and sub count
 	name = this.readUTF();
 	num_subs = this.readU16();
 
-	// Read optional properties
-	props = parseProperties({ 1:AWD_FIELD_MTX4x4 }); 
+	console.log( "AWDloader.js parseMeshData geom name ["+name+"]", num_subs );
 
-	var mtx : Matrix3D;
-	var bsm_data : Array = props.get(1, null);
+	// Read optional properties
+	props = this.parseProperties({ 1:AWD_FIELD_MTX4x4 }); 
+
+	var mtx;
+	var bsm_data = props.get(1, null);
 	if (bsm_data) {
 		bsm = new THREE.Matrix4(bsm_data);
 	}
 
 	geom = new THREE.Geometry();
+	geom.geometryGroups = {};
 
+	
 	// Loop through sub meshes
 	subs_parsed = 0;
+
 	while (subs_parsed < num_subs) {
+
 		var mat_id, sm_len, sm_end;
-		var sub_geom : SubGeometry;
-		var skinned_sub_geom : SkinnedSubGeometry;
-		var w_indices : Vector.<Number>;
-		var weights : Vector.<Number>;
+		var sub_geom;
+		var skinned_sub_geom;
+		var w_indices;
+		var weights;
 
-		sub_geom = new SubGeometry();
 
-		sm_len = _body.readUnsignedInt();
-		sm_end = _body.position + sm_len;
+		var geometryGroup = 
+		geom.geometryGroups[ subs_parsed ] = {};
 
+		geometryGroup.faces3 = [];
+		geometryGroup.faces4 = [];
+		geometryGroup.materialIndex = subs_parsed;
+		geometryGroup.vertices = 0; // TODO useless
+
+		
+
+
+		geometryGroup.numMorphTargets = 0;
+		geometryGroup.numMorphNormals = 0;
+
+
+		sm_len = this.readU32();
+		sm_end = this._ptr + sm_len;
+
+		
+		
 		// Ignore for now
-		parseProperties(null);
+		this.parseProperties(null);
 
 		// Loop through data streams
-		while (_body.position < sm_end) {
-			var idx : uint = 0;
-			var str_type : uint, str_len : uint, str_end : uint;
+		while ( this._ptr < sm_end ) {
+			
 
-			str_type = _body.readUnsignedByte();
-			str_len = _body.readUnsignedInt();
-			str_end = _body.position + str_len;
+			var idx = 0;
+			
+			var str_type, str_len, str_end;
 
-			var x:Number, y:Number, z:Number;
+			str_type = this.readU8();
+			str_len = this.readU32();
+			str_end = this._ptr + str_len;
 
+			console.log( "AWDloader.js parseMeshData stream type ", str_type );
+
+			var x, y, z, u, v, a, b, c;
+
+			// VERTICES
 			if (str_type == 1) {
-				var verts : Vector.<Number> = new Vector.<Number>;
-				while (_body.position < str_end) {
-					x = read_float();
-					y = read_float();
-					z = read_float();
 
-					verts[idx++] = x;
-					verts[idx++] = y;
-					verts[idx++] = z;
+				geometryGroup.__vertexArray = new Float32Array( sm_len>>2 );
+
+				while (this._ptr < str_end) {
+					geometryGroup.__vertexArray[idx++] = this.readF32();
+					geometryGroup.__vertexArray[idx++] = this.readF32();
+					geometryGroup.__vertexArray[idx++] = this.readF32();
 				}
-				sub_geom.updateVertexData(verts);
+
 			}
+			// INDICES / FACES
 			else if (str_type == 2) {
-				var indices : Vector.<uint> = new Vector.<uint>;
-				while (_body.position < str_end) {
-					indices[idx++] = read_uint();
+				
+				while (this._ptr < str_end) {
+					a = this.readU16();
+					b = this.readU16();
+					c = this.readU16();
+					geometryGroup.faces3.push( new THREE.Face3( a, b, c ) );
 				}
-				sub_geom.updateIndexData(indices);
 			}
+			// UVS / TEX COORDS
 			else if (str_type == 3) {
-				var uvs : Vector.<Number> = new Vector.<Number>;
-				while (_body.position < str_end) {
-					uvs[idx++] = read_float();
+				
+				geometryGroup.__uvArray = new Float32Array( sm_len>>2 );
+
+				while (this._ptr < str_end) {
+					geometryGroup.__uvArray[idx++] = this.readF32();
 				}
-				sub_geom.updateUVData(uvs);
+
 			}
+			// NORMALS
 			else if (str_type == 4) {
-				var normals : Vector.<Number> = new Vector.<Number>;
-				while (_body.position < str_end) {
-					normals[idx++] = read_float();
+				
+				geometryGroup.__normalArray = new Float32Array( sm_len>>2 );
+				
+				while (this._ptr < str_end) {
+					geometryGroup.__normalArray[idx++] = this.readF32();
 				}
-				sub_geom.updateVertexNormalData(normals);
+
 			}
+
 			else if (str_type == 6) {
-				w_indices = new Vector.<Number>;
-				while (_body.position < str_end) {
-					w_indices[idx++] = read_uint()*3;
-				}
+				// TODO error not supported ?
+				this._ptr = str_end;
 			}
 			else if (str_type == 7) {
-				weights = new Vector.<Number>;
-				while (_body.position < str_end) {
-					weights[idx++] = read_float();
-				}
+				// TODO error not supported ?
+				this._ptr = str_end;
 			}
 			else {
-				_body.position = str_end;
+				this._ptr = str_end;
 			}
+
+
+			console.log( "AWDloader.js end stream, pos : " , this._ptr, " expected : ", str_end );
+			
 		}
 
 		// Ignore sub-mesh attributes for now
-		parseUserAttributes();
+		
 
 		// If there were weights and joint indices defined, this
 		// is a skinned mesh and needs to be built from skinned
 		// sub-geometries, so copy data across.
+		/*
 		if (w_indices && weights) {
 			skinned_sub_geom = new SkinnedSubGeometry(weights.length / sub_geom.numVertices);
 			skinned_sub_geom.updateVertexData(sub_geom.vertexData);
@@ -284,27 +332,26 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			skinned_sub_geom.updateJointWeightsData(weights);
 			sub_geom = skinned_sub_geom;
 		}
-
+*/
 		subs_parsed++;
-		geom.addSubGeometry(sub_geom);
 	}
 
-	parseUserAttributes();
+	this.parseUserAttributes();
 
-	finalizeAsset(geom, name);
+	//finalizeAsset(geom, name);
 
 	return geom;
 }
 
 JUKEJS.AWDLoader.prototype.parseProperties = function ( expected ) {
 	var list_len = this.readU32();
-	var list_end = _ptr + list_len;
+	var list_end = this._ptr + list_len;
 
 	var props = new AWDProperties();
 
 	if( expected ) {
 
-		while( _atf < list_end ) {
+		while( this._ptr < list_end ) {
 
 			var key = this.readU16();
 			var len = this.readU16();
@@ -314,12 +361,24 @@ JUKEJS.AWDLoader.prototype.parseProperties = function ( expected ) {
 				type = expected[ key ];
 				props.set( key, this.parseAttrValue( type, len ) );
 			} else {
-				_ptr += len;
+				this._ptr += len;
 			}
 		}
 
 	}
+
+	return props;
+
 };
+
+
+JUKEJS.AWDLoader.prototype.parseUserAttributes = function ( ) {
+	// skip for now
+	var len = this.readU32();
+	this._ptr += len;
+	return null;
+};
+
 
 JUKEJS.AWDLoader.prototype.parseAttrValue = function ( type, len ) {
 
@@ -390,10 +449,7 @@ JUKEJS.AWDLoader.prototype.parseAttrValue = function ( type, len ) {
 		return list;
 	}
 	else {
-		var val : *;
-
-		val = read_func();
-		return val;
+		return read_func();
 	}
 
 }
@@ -445,22 +501,22 @@ JUKEJS.AWDLoader.prototype.readF64 = function () {
  * @return {string} 16-bit Unicode string.
  */
 JUKEJS.AWDLoader.prototype.readUTF = function () {
-	var end = this.readU16() + _ptr;
+	var end = this.readU16();
 	
 	// TODO(user): Use native implementations if/when available
 	
 	var out = [], c = 0;
 	
 	while ( out.length < end ) {
-		var c1 = this._data.getUint8( _ptr++ );
+		var c1 = this._data.getUint8( this._ptr++ );
 		if (c1 < 128) {
 			out[c++] = String.fromCharCode(c1);
 		} else if (c1 > 191 && c1 < 224) {
-			var c2 = this._data.getUint8( _ptr++ );
+			var c2 = this._data.getUint8( this._ptr++ );
 			out[c++] = String.fromCharCode((c1 & 31) << 6 | c2 & 63);
 		} else {
-			var c2 = this._data.getUint8( _ptr++ );
-			var c3 = this._data.getUint8( _ptr++ );
+			var c2 = this._data.getUint8( this._ptr++ );
+			var c3 = this._data.getUint8( this._ptr++ );
 			out[c++] = String.fromCharCode(
 				(c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63
 			);
@@ -503,8 +559,8 @@ AWD_FIELD_MTX4x4 = 47;
 
 AWDBlock = function()
 {
-	public var id;
-	public var data;
+	var id;
+	var data;
 }
 AWDBlock.prototype.constructor = AWDBlock;
 
