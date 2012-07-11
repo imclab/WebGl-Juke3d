@@ -5,6 +5,8 @@ JUKEJS.Scene = function( container ) {
 
 	this.scene = new THREE.Scene();
 
+	this.loader;
+
 	this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 5000 );
 	this.camera.position.z = 1500;
 	this.scene.add( this.camera );
@@ -44,18 +46,20 @@ JUKEJS.Scene.prototype = {
 
 		var geometry = new THREE.CubeGeometry( 200, 200, 200 );
 		var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-
+		var scene = this.scene;
 		this.mesh = new THREE.Mesh( geometry, material );
 		this.scene.add( this.mesh );
 
 
-		var loader = new JUKEJS.AWDLoader();
-		loader.load( JUKEJS.Config.assetsPath + "3d/car/juke.AWD", this.onJukeLoaded );
+		loader = new JUKEJS.AWDLoader();
+		loader.load( JUKEJS.Config.assetsPath + "3d/car/juke.AWD", 
+				function() {
+					console.log( "Scene.js onJukeLoaded" );
+					scene.add( loader.trunk );
+				} 
+				);
 
-	},
-
-	onJukeLoaded : function() {
-		console.log( "Scene.js onJukeLoaded" );
 	}
+ 
 
 }

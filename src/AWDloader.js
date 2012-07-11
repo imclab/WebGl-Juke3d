@@ -7,6 +7,10 @@ JUKEJS.AWDLoader = function ( showStatus ) {
 
 	THREE.Loader.call( this, showStatus );
 
+	this.trunk = new THREE.Object3D();
+
+	this.materialFactory = undefined;
+
 	this._data;
 	this._ptr = 0;
 
@@ -39,7 +43,8 @@ JUKEJS.AWDLoader.prototype.load = function ( url, callback ) {
 
 			if ( xhr.status == 200 || xhr.status == 0 ) {
 
-				callback( that.parse( xhr.response ) );
+				that.parse( xhr.response );
+				callback();
 
 			} else {
 
@@ -87,22 +92,22 @@ JUKEJS.AWDLoader.prototype.parseNextBlock = function ( ) {
 	type = this.readU8();
 	len = this.readU32();
 
-	console.log( "AWDloader.js in block type - len : " , type , len);
+	// console.log( "AWDloader.js in block type - len : " , type , len);
 	var posExpected = this._ptr + len;
 
 	switch (type) {
 		case 1:
 			assetData = this.parseMeshData(len);
 			break;
-		// case 22:
-		// 	assetData = parseContainer(len);
-		// 	break;
-		// case 24:
-		// 	assetData = parseMeshInstance(len);
-		// 	break;
-		// case 81:
-		// 	assetData = parseMaterial(len);
-		// 	break;
+		case 22:
+			assetData = this.parseContainer(len);
+			break;
+		case 24:
+			assetData = this.parseMeshInstance(len);
+			break;
+		case 81:
+			assetData = this.parseMaterial(len);
+			break;
 		// case 82:
 		// 	assetData = parseTexture(len);
 		// 	break;
@@ -124,7 +129,7 @@ JUKEJS.AWDLoader.prototype.parseNextBlock = function ( ) {
 			break;
 	}
 
-	console.log( "AWDloader.js in block parsed - ptr : " , this._ptr, "expected " , posExpected);
+	// console.log( "AWDloader.js in block parsed - ptr : " , this._ptr, "expected " , posExpected);
 
 
 	// Store block reference for later use
@@ -172,6 +177,176 @@ JUKEJS.AWDLoader.prototype._parseHeader = function () {
 }
 
 
+JUKEJS.AWDLoader.prototype.parseContainer = function ( len ) {
+	var name;
+	var par_id;
+	var mtx;
+	var ctr;
+	var parent;
+	
+	ctr = new THREE.Object3D();
+
+	par_id = this.readU32();
+	mtx = this.parseMatrix4();
+	ctr.name = this.readUTF();
+
+	console.log( "AWDLoader parseContainer ", ctr.name );
+	
+	ctr.applyMatrix( mtx );
+	
+	parent = this._blocks[par_id].data || this.trunk;
+	console.log( "			p", parent.name );
+	parent.add(ctr);
+	
+	this.parseProperties(null);
+	ctr.extra = this.parseUserAttributes();
+
+	//finalizeAsset(ctr, name);
+	
+	return ctr;
+}
+
+JUKEJS.AWDLoader.prototype.parseMeshInstance = function ( len ) {
+	var name;
+	var mesh, geom;
+	var par_id, data_id;
+	var mtx;
+	var materials;
+	var num_materials;
+	var materials_parsed;
+	var parent;
+
+	par_id = this.readU32();
+	mtx = this.parseMatrix4();
+	name = this.readUTF();
+
+	console.log( "AWDLoader parseMeshInstance ", name );
+
+	data_id = this.readU32();
+	geom = this._blocks[data_id].data;
+
+	materials = [];
+	num_materials = this.readU16();
+	materials_parsed = 0;
+	while (materials_parsed < num_materials) {
+		var mat_id;
+		mat_id = this.readU32();
+		
+		materials.push(this._blocks[mat_id].data);
+		
+		materials_parsed++;
+	}
+
+	mesh = new THREE.Mesh( geom );
+	mesh.applyMatrix( mtx );
+	mesh.name = name;
+
+	// Add to parent if one exists
+	parent = this._blocks[par_id].data || this.trunk;
+	parent.add(mesh);
+	
+
+	// TODO check sub geom lenght?
+	if (materials.length >= 1 ) {
+		mesh.material = materials[0];
+	}
+	else if (materials.length > 1) {
+		mesh.material = materials;
+	}
+
+	// Ignore for now
+	this.parseProperties(null);
+	mesh.extra = this.parseUserAttributes();
+
+	//finalizeAsset(mesh, name);
+
+	return mesh;
+}
+
+
+JUKEJS.AWDLoader.prototype.parseMaterial = function ( len ) {
+	var name;
+	var type;
+	var props;
+	var mat;
+	var attributes;
+	var finalize;
+	var num_methods;
+	var methods_parsed;
+
+	name = this.readUTF();
+	type = this.readU8();
+	num_methods = this.readU8();
+
+	console.log( "AWDLoader parseMaterial ",name )
+
+	// Read material numerical properties
+	// (1=color, 2=bitmap url, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
+	props = this.parseProperties({ 1:AWD_FIELD_INT32, 2:AWD_FIELD_BADDR, 
+		11:AWD_FIELD_BOOL, 12:AWD_FIELD_FLOAT32, 13:AWD_FIELD_BOOL });
+
+	methods_parsed = 0;
+
+	while (methods_parsed < num_methods) {
+		var method_type;
+		
+		method_type = this.readU16();
+		this.parseProperties(null);
+		this.parseUserAttributes();
+	}
+
+	attributes = this.parseUserAttributes();
+	
+	if( this.materialFactory !== undefined ) {
+		mat = this.materialFactory( name );
+		if( mat ) return mat;
+	}
+
+	if (type == 1) { // Color material
+		mat = new THREE.MeshBasicMaterial();
+		mat.color = new THREE.Color( props.get(1, 0xcccccc) );
+	}
+	else if (type == 2) { // Bitmap material
+
+		mat = new THREE.MeshBasicMaterial();
+
+		//TODO: not used
+		//var bmp : BitmapData;
+		// var texture : Texture2DBase;
+		// var tex_addr : uint;
+		
+		// tex_addr = props.get(2, 0);
+		// texture = _blocks[tex_addr].data;
+		
+		// // If bitmap asset has already been loaded
+		// if (texture) {
+		// 	mat = new TextureMaterial(texture);
+		// 	TextureMaterial(mat).alphaBlending = props.get(11, false);
+		// 	finalize = true;
+		// }
+		// else {
+		// 	// No bitmap available yet. Material will be finalized
+		// 	// when texture finishes loading.
+		// 	mat = new TextureMaterial(null);
+		// 	if (tex_addr > 0)
+		// 		_texture_users[tex_addr.toString()].push(mat);
+			
+		// 	finalize = false;
+		// }
+	}
+
+	mat.extra = attributes;
+	mat.alphaThreshold = props.get(12, 0.0);
+	mat.repeat = props.get(13, false);
+
+	// if (finalize) {
+	// 	finalizeAsset(mat, name);
+	// }
+
+	return mat;
+}
+
+
 JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 
 	var name;
@@ -202,6 +377,7 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 
 	geom = new THREE.Geometry();
 	geom.geometryGroups = {};
+	geom.geometryGroupsList = [];
 
 	
 	// Loop through sub meshes
@@ -217,7 +393,9 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 
 
 		var geometryGroup = 
-		geom.geometryGroups[ subs_parsed ] = {};
+		geom.geometryGroups[ subs_parsed ] = 
+		geom.geometryGroupsList[ subs_parsed ] = 
+		{};
 
 		geometryGroup.faces3 = [];
 		geometryGroup.faces4 = [];
@@ -248,10 +426,7 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			var str_type, str_len, str_end;
 
 			str_type = this.readU8();
-			str_len = this.readU32();
-			str_end = this._ptr + str_len;
-
-			console.log( "AWDloader.js parseMeshData stream type ", str_type );
+			str_end = this.readU32() + this._ptr;
 
 			var x, y, z, u, v, a, b, c;
 
@@ -311,7 +486,7 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			}
 
 
-			console.log( "AWDloader.js end stream, pos : " , this._ptr, " expected : ", str_end );
+			//console.log( "AWDloader.js end stream, pos : " , this._ptr, " expected : ", str_end );
 			
 		}
 
@@ -332,16 +507,51 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			skinned_sub_geom.updateJointWeightsData(weights);
 			sub_geom = skinned_sub_geom;
 		}
-*/
+		*/
+
+		this.parseUserAttributes();
 		subs_parsed++;
 	}
 
-	this.parseUserAttributes();
+	// rebuild Geometry
 
+
+	this.parseUserAttributes();
 	//finalizeAsset(geom, name);
 
 	return geom;
 }
+
+JUKEJS.AWDLoader.prototype.parseMatrix4 = function ( ) {
+	var mtx = new THREE.Matrix4();
+	var e = mtx.elements;
+
+	e[0] = this.readF32();
+	e[1] = this.readF32();
+	e[2] = this.readF32();
+	e[3] = this.readF32();
+	//e[3] = 0.0;
+
+	e[4] = this.readF32();
+	e[5] = this.readF32();
+	e[6] = this.readF32();
+	e[7] = this.readF32();
+	//e[7] = 0.0;
+
+	e[8] = this.readF32();
+	e[9] = this.readF32();
+	e[10] = this.readF32();
+	e[11] = this.readF32();
+	// e[11] = 0.0;
+
+	e[12] = this.readF32();
+	e[13] = this.readF32();
+	e[14] = this.readF32();
+	e[15] = this.readF32();
+	// e[15] = 1.0;
+	return mtx;
+}
+
 
 JUKEJS.AWDLoader.prototype.parseProperties = function ( expected ) {
 	var list_len = this.readU32();
@@ -374,8 +584,7 @@ JUKEJS.AWDLoader.prototype.parseProperties = function ( expected ) {
 
 JUKEJS.AWDLoader.prototype.parseUserAttributes = function ( ) {
 	// skip for now
-	var len = this.readU32();
-	this._ptr += len;
+	this._ptr = this.readU32() + this._ptr;
 	return null;
 };
 
@@ -442,14 +651,14 @@ JUKEJS.AWDLoader.prototype.parseAttrValue = function ( type, len ) {
 		num_elems = len / elem_len;
 
 		while (num_read < num_elems) {
-			list.push(read_func());
+			list.push(read_func.call( this ) );
 			num_read++;
 		}
 
 		return list;
 	}
 	else {
-		return read_func();
+		return read_func.call( this );
 	}
 
 }
