@@ -8,7 +8,11 @@ JUKEJS.Scene = function( container ) {
 	this.loader;
 
 	this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 5000 );
-	this.camera.position.z = 1500;
+
+	this.camera.position.x = 135;
+	this.camera.position.y = 92;
+	this.camera.position.z = 175;
+
 	this.scene.add( this.camera );
 	
 	// renderer
@@ -58,8 +62,9 @@ JUKEJS.Scene.prototype = {
 	},
 
 	render : function() {
-		
-		//this.loader.trunk.rotation.y += 0.02;
+//		if( this.car.trunk )
+//		    this.car.trunk.rotation.y += 0.02;
+
 		this.controls.update( );
 		this.renderer.render( this.scene, this.camera );
 	},
@@ -77,14 +82,15 @@ JUKEJS.Scene.prototype = {
 
 		this.loader.materialFactory = function( id ) {
 			return JUKEJS.materials.get( id );
-			//return JUKEJS.materials.get( "DEFAULT_GREY" );
 		}
 
 		this.loader.load( JUKEJS.Config.assetsPath + "3d/car/juke.AWD", 
 				function() {
 					console.log( "Scene.js onJukeLoaded" );
-					scope.scene.add( scope.loader.trunk );
-				} 
+                    scope.car = new Car( );
+                    scope.car.init( scope.loader.trunk );
+					scope.scene.add( scope.car.trunk );
+				}
 				);
 
 		this._buildLights();
@@ -101,23 +107,23 @@ JUKEJS.Scene.prototype = {
 		light1.position.z = 200;
 		this.scene.add( light1 );
 
-		/*light2 = new THREE.PointLight( 0x0040ff, 2, 1000 );
+		light2 = new THREE.PointLight( 0xffffff, 2, 1000 );
 		light2.position.x = -200;
 		light2.position.y = 200;
 		light2.position.z = 200;
 		this.scene.add( light2 );
 
-		light3 = new THREE.PointLight( 0x80ff80, 2, 1000 );
+		light3 = new THREE.PointLight( 0xffffff, 2, 1000 );
 		light3.position.x = -200;
 		light3.position.y = -200;
 		light3.position.z = 200;
 		this.scene.add( light3 );
 
-		light4 = new THREE.PointLight( 0xffaa00, 2, 1000 );
+		light4 = new THREE.PointLight( 0xffffff, 2, 1000 );
 		light4.position.x = 200;
 		light4.position.y = 200;
 		light4.position.z = -200;
-		this.scene.add( light4 );*/
+		this.scene.add( light4 );
 
 	}
  

@@ -8,9 +8,13 @@ Textures.baseurl = "./assets/3d/tex/"
 Textures.batchCount = 0;
 
 Textures.lib = [
-	{ id:"body_ao", 		url : Textures.baseurl+	"BodyAmbientOcclusion_MR_.jpg" 		, type:0},
 	{ id:"arrlak_ao", 		url : Textures.baseurl+	"arr_lakAmbientOcclusion_MR_.jpg" 	, type:0},
+	{ id:"body_ao", 		url : Textures.baseurl+	"BodyAmbientOcclusion_MR_.jpg" 		, type:0},
 	{ id:"boot_ao", 		url : Textures.baseurl+	"BootAmbientOcclusion_MR_.jpg" 		, type:0},
+	{ id:"caisse_ao", 		url : Textures.baseurl+	"caisseGumAmbientOcclusion_MR_.jpg"	, type:0},
+	{ id:"rdoor_ao", 		url : Textures.baseurl+	"Door_BLAmbientOcclusion_MR_.jpg" 	, type:0},
+	{ id:"fdoor_ao", 		url : Textures.baseurl+	"Door_FLAmbientOcclusion_MR_.jpg" 	, type:0},
+	{ id:"grill_ao", 		url : Textures.baseurl+	"Grilll_F3CompleteMap.jpg" 	        , type:0},
 	{ id:"env_studio_ref", 	url : Textures.baseurl+	"env_studio_ref/studio_cubic.jpg" 	, type:1}
 ]
 
@@ -131,17 +135,17 @@ __CubeLoader.prototype = {
 		var ext = data.url.substring( ppos, data.url.length );
 
 		image0.crossOrigin = this.crossOrigin;
-		image0.src = bu+"0"+ext;
+		image0.src = bu+"1"+ext;
 		image1.crossOrigin = this.crossOrigin;
-		image1.src = bu+"1"+ext;
+		image1.src = bu+"0"+ext;
 		image2.crossOrigin = this.crossOrigin;
 		image2.src = bu+"3"+ext;
 		image3.crossOrigin = this.crossOrigin;
 		image3.src = bu+"2"+ext;
 		image4.crossOrigin = this.crossOrigin;
-		image4.src = bu+"4"+ext;
+		image4.src = bu+"5"+ext;
 		image5.crossOrigin = this.crossOrigin;
-		image5.src = bu+"5"+ext;
+		image5.src = bu+"4"+ext;
 
 	}
 }

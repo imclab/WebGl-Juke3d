@@ -544,7 +544,10 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 		geom.faceVertexUvs[0].push( [ uvs[face3.a], uvs[face3.b], uvs[face3.c] ] );
 		//console.log( normals[ face3.a ].length() ,  normals[ face3.b ].length() ,  normals[ face3.c ].length())
 	}
-	
+    // copy uv to uv2 ?
+    geom.faceVertexUvs[1] = geom.faceVertexUvs[0];
+
+
 	//geom.computeFaceNormals();
 	
 

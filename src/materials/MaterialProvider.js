@@ -26,20 +26,20 @@ MaterialProvider.prototype = {
 		this._classeMap["CAR_LOW_GUM"] = 
 
 		this._classeMap["Kar_CAR_PAINT_int"] = 
-		this._classeMap["DLP_CAR_PAINT"] = 
-		this._classeMap["DLP_CAR_PAINT_int"] = 
-		this._classeMap["DLZ_CAR_PAINT"] = 
-		this._classeMap["DPP_CAR_PAINT_int"] = 
+		this._classeMap["DLP_CAR_PAINT_int"] =
+		this._classeMap["DPP_CAR_PAINT_int"] =
 
-		this._classeMap["GREEN_ARROW"] = 
-		this._classeMap["Material #11"] = 
-		this._classeMap["Material #23"] = 
-		this._classeMap["CAR_WHEEL"] = 
-		this._classeMap["CAR_ALLOY1"] = 
-		this._classeMap["CAR_ALU"] = 
-		this._classeMap["Grill_CAR_PAINT"] = 
+		this._classeMap["GREEN_ARROW"] =
+		this._classeMap["Material #11"] =
+		this._classeMap["Material #23"] =
+		this._classeMap["CAR_WHEEL"] =
+		this._classeMap["CAR_ALLOY1"] =
+		this._classeMap["CAR_ALU"] =
 		this._classeMap["GPS_ARW "] = DefaultMaterial;
 
+		this._classeMap["Grill_CAR_PAINT"] = GrillMaterial;
+		this._classeMap["DLP_CAR_PAINT"] = FdoorMaterial;
+		this._classeMap["DLZ_CAR_PAINT"] = RdoorMaterial;
 		this._classeMap["Hai_CAR_PAINT"] = BootMaterial;
 		this._classeMap["Bum_CAR_PAINT"] = ArrMaterial;
 		this._classeMap["Kar_CAR_PAINT"] = BodyMaterial;
