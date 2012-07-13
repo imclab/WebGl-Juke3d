@@ -12,8 +12,18 @@ JUKEJS.Config.assetsPath = JUKEJS.Config.basePath + "assets/";
 // Entry point
 window["jukeentry"] = function( container ) {
 
-	var scene = new JUKEJS.Scene( container );
-	scene.play(); 
+	JUKEJS._boot();
+
 
 }
 
+JUKEJS._boot = function() {
+	Textures.load( JUKEJS._imagesLoaded );
+}
+
+JUKEJS._imagesLoaded = function() {
+	
+	var scene = new JUKEJS.Scene( container );
+	scene.play();
+
+}

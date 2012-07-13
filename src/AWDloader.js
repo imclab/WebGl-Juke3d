@@ -26,6 +26,7 @@ JUKEJS.AWDLoader = function ( showStatus ) {
 	this._blocks[0] = new AWDBlock();
 	this._blocks[0].data = null;
 
+
 };
 
 
@@ -42,8 +43,12 @@ JUKEJS.AWDLoader.prototype.load = function ( url, callback ) {
 		if ( xhr.readyState == 4 ) {
 
 			if ( xhr.status == 200 || xhr.status == 0 ) {
-
+				console.log( "AWDloader loaded, now parsing " );
+				var parseTime = Date.now();
 				that.parse( xhr.response );
+				parseTime = Date.now() - parseTime;
+				console.log( "AWDloader parsed in ", parseTime );
+
 				callback();
 
 			} else {
@@ -190,12 +195,12 @@ JUKEJS.AWDLoader.prototype.parseContainer = function ( len ) {
 	mtx = this.parseMatrix4();
 	ctr.name = this.readUTF();
 
-	console.log( "AWDLoader parseContainer ", ctr.name );
+	//console.log( "AWDLoader parseContainer ", ctr.name );
 	
 	ctr.applyMatrix( mtx );
 	
 	parent = this._blocks[par_id].data || this.trunk;
-	console.log( "			p", parent.name );
+	//console.log( "			p", parent.name );
 	parent.add(ctr);
 	
 	this.parseProperties(null);
@@ -220,8 +225,6 @@ JUKEJS.AWDLoader.prototype.parseMeshInstance = function ( len ) {
 	mtx = this.parseMatrix4();
 	name = this.readUTF();
 
-	console.log( "AWDLoader parseMeshInstance ", name );
-
 	data_id = this.readU32();
 	geom = this._blocks[data_id].data;
 
@@ -237,6 +240,8 @@ JUKEJS.AWDLoader.prototype.parseMeshInstance = function ( len ) {
 		materials_parsed++;
 	}
 
+	//console.log( "AWDLoader parseMeshInstance ", name );
+
 	mesh = new THREE.Mesh( geom );
 	mesh.applyMatrix( mtx );
 	mesh.name = name;
@@ -251,7 +256,7 @@ JUKEJS.AWDLoader.prototype.parseMeshInstance = function ( len ) {
 		mesh.material = materials[0];
 	}
 	else if (materials.length > 1) {
-		mesh.material = materials;
+		mesh.geometry.materials = materials;
 	}
 
 	// Ignore for now
@@ -278,7 +283,7 @@ JUKEJS.AWDLoader.prototype.parseMaterial = function ( len ) {
 	type = this.readU8();
 	num_methods = this.readU8();
 
-	console.log( "AWDLoader parseMaterial ",name )
+	//console.log( "AWDLoader parseMaterial ",name )
 
 	// Read material numerical properties
 	// (1=color, 2=bitmap url, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
@@ -358,13 +363,14 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 
 	var face;
 	var vector;
-	var uv;
+	var tmparray;
+	var face3;
 
 	// Read name and sub count
 	name = this.readUTF();
 	num_subs = this.readU16();
 
-	console.log( "AWDloader.js parseMeshData geom name ["+name+"]", num_subs );
+	//console.log( "AWDloader.js parseMeshData geom name ["+name+"]", num_subs );
 
 	// Read optional properties
 	props = this.parseProperties({ 1:AWD_FIELD_MTX4x4 }); 
@@ -376,12 +382,14 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 	}
 
 	geom = new THREE.Geometry();
-	geom.geometryGroups = {};
-	geom.geometryGroupsList = [];
+	var subgeometries = [];
+	var normals = [];
+	var uvs = [];
 
 	
 	// Loop through sub meshes
 	subs_parsed = 0;
+	var voffset = 0;
 
 	while (subs_parsed < num_subs) {
 
@@ -392,15 +400,12 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 		var weights;
 
 
-		var geometryGroup = 
-		geom.geometryGroups[ subs_parsed ] = 
-		geom.geometryGroupsList[ subs_parsed ] = 
-		{};
+		var geometryGroup = {};
+		subgeometries.push( geometryGroup );
 
 		geometryGroup.faces3 = [];
 		geometryGroup.faces4 = [];
 		geometryGroup.materialIndex = subs_parsed;
-		geometryGroup.vertices = 0; // TODO useless
 
 		
 
@@ -433,42 +438,49 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			// VERTICES
 			if (str_type == 1) {
 
-				geometryGroup.__vertexArray = new Float32Array( sm_len>>2 );
+				tmparray = geom.vertices;
 
 				while (this._ptr < str_end) {
-					geometryGroup.__vertexArray[idx++] = this.readF32();
-					geometryGroup.__vertexArray[idx++] = this.readF32();
-					geometryGroup.__vertexArray[idx++] = this.readF32();
+					x = this.readF32();
+					y = this.readF32();
+					z = this.readF32();
+					tmparray.push( new THREE.Vector3(x, y, z) );
 				}
 
 			}
 			// INDICES / FACES
 			else if (str_type == 2) {
-				
+				tmparray = geom.faces;
 				while (this._ptr < str_end) {
 					a = this.readU16();
 					b = this.readU16();
 					c = this.readU16();
-					geometryGroup.faces3.push( new THREE.Face3( a, b, c ) );
+					tmparray.push( new THREE.Face3( a+voffset, b+voffset, c+voffset, undefined, undefined, subs_parsed ) );
 				}
 			}
 			// UVS / TEX COORDS
 			else if (str_type == 3) {
 				
-				geometryGroup.__uvArray = new Float32Array( sm_len>>2 );
+				//tmparray = geom.faceVertexUvs[0];
 
 				while (this._ptr < str_end) {
-					geometryGroup.__uvArray[idx++] = this.readF32();
+					u = this.readF32();
+					v = this.readF32();
+					uvs.push( new THREE.UV(u, v) );
 				}
 
 			}
 			// NORMALS
 			else if (str_type == 4) {
 				
-				geometryGroup.__normalArray = new Float32Array( sm_len>>2 );
-				
+
 				while (this._ptr < str_end) {
-					geometryGroup.__normalArray[idx++] = this.readF32();
+					x = this.readF32();
+					y = this.readF32();
+					z = this.readF32();
+					vector = new THREE.Vector3( x, y, z);
+					//vector.normalize();
+					normals.push( vector );
 				}
 
 			}
@@ -490,6 +502,8 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			
 		}
 
+		
+
 		// Ignore sub-mesh attributes for now
 		
 
@@ -510,11 +524,29 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 		*/
 
 		this.parseUserAttributes();
+		voffset = geom.vertices.length;
 		subs_parsed++;
 	}
 
 	// rebuild Geometry
+	
+	//write back normals data to faces
+	tmparray = geom.faces;
+	for (var i = 0; i < tmparray.length; i++) {
+		face3 = tmparray[i];
+		//TODO create average face nrm
+		//face3.normal = normals[ face3.a ];
 
+		face3.vertexNormals.push( normals[ face3.a ] );
+		face3.vertexNormals.push( normals[ face3.b ] );
+		face3.vertexNormals.push( normals[ face3.c ] );
+
+		geom.faceVertexUvs[0].push( [ uvs[face3.a], uvs[face3.b], uvs[face3.c] ] );
+		//console.log( normals[ face3.a ].length() ,  normals[ face3.b ].length() ,  normals[ face3.c ].length())
+	}
+	
+	//geom.computeFaceNormals();
+	
 
 	this.parseUserAttributes();
 	//finalizeAsset(geom, name);

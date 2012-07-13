@@ -37,7 +37,7 @@
 			<mapper>
 
 				<globmapper from="${basedir}${file.separator}src*"
-				            to="&lt;script src='./js/sources*'&gt;&lt;/script&gt;">
+				            to="&lt;script src='../src*'&gt;&lt;/script&gt;">
 				</globmapper>
 			</mapper>
 		</pathconvert>
@@ -77,9 +77,6 @@
 		</copy>
 
 
-		<copy todir="${basedir}/bin/js/sources" preservelastmodified="true">
-			<filelist refid="js_sources" />
-		</copy>
 
 	</target>
 
@@ -132,6 +129,14 @@
 		
 		<filelist dir="${basedir}\src" id="js_sources">
 			<file name="jukejs.js" />
+
+			<file name="io/ImageLoader.js" />
+
+			<file name="materials/Textures.js" />
+			<file name="materials/LakMaterial.js" />
+			<file name="materials/DefaultMaterial.js" />
+			<file name="materials/MaterialProvider.js" />
+
 			<file name="Scene.js" />
 			<file name="AWDloader.js" />
 		</filelist>
