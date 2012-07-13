@@ -26,24 +26,26 @@ Car.prototype = {
         var rlWheel = this.tree.get( "wrg" );
         var rrWheel = this.tree.get( "wrd" );
 
-        this._flWheel = new Wheel( this.lib );
+        var HQ_wheel = true;
+
+        this._flWheel = new Wheel( this.lib , HQ_wheel);
         this._flWheel.position = flWheel.position.clone( );
         flWheel.parent.add( this._flWheel );
         flWheel.parent.remove( flWheel );
 
-        this._frWheel = new Wheel( this.lib );
+        this._frWheel = new Wheel( this.lib, HQ_wheel );
         this._frWheel.reverseway = true;
         this._frWheel.position = frWheel.position.clone( );
         frWheel.parent.add( this._frWheel );
         frWheel.parent.remove( frWheel );
 
-        this._rlWheel = new Wheel(this.lib);
+        this._rlWheel = new Wheel(this.lib, HQ_wheel);
         this._rlWheel.reverseway = true;
         this._rlWheel.position = rlWheel.position.clone( );
         rlWheel.parent.add( this._rlWheel );
         rlWheel.parent.remove( rlWheel );
 
-        this._rrWheel = new Wheel(this.lib);
+        this._rrWheel = new Wheel(this.lib, HQ_wheel);
         this._rrWheel.position = rrWheel.position.clone( );
         rrWheel.parent.add( this._rrWheel );
         rrWheel.parent.remove( rrWheel );
@@ -88,7 +90,7 @@ Car.prototype = {
     },
 
     handleWheel : function( wheel ) {
-        wheel.setType( 3 );
+        wheel.setType( 0 );
     },
 
     enterObject : function( obj ) {
@@ -137,6 +139,7 @@ Wheel.prototype.setType = function( alloyIndex ) {
     if ( this.alloy )
         this.essieu.remove( this.alloy );
 
+    console.log( "Wheel setType "+ "CAR_ALLOY"+(alloyIndex+1) );
     this.alloy = this.lib.getAlloy(alloyIndex, JUKEJS.materials.get( "CAR_ALLOY"+(alloyIndex+1) ) );
     this.essieu.add(this.alloy);
     this.alloy.rotation.y = Math.PI;
@@ -152,6 +155,10 @@ CarLib = function ( elems ) {
 
     this.pneumaticMesh = this.tree.get( "pneumatic" );
     this.pneumaticMeshHi = this.tree.get( "pneumatic2" );
+
+    this.pneumaticMeshHi.geometry.computeTangents();
+    this.pneumaticMesh.geometry.computeTangents();
+
     this.accessories = this.tree.get( "alloyac" );
     this.alloys = [
         this.tree.get( "allow1" ),

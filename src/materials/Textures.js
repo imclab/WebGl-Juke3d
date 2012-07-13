@@ -11,12 +11,18 @@ Textures.lib = [
 	{ id:"arrlak_ao", 		url : Textures.baseurl+	"arr_lakAmbientOcclusion_MR_.jpg" 	, type:0},
 	{ id:"body_ao", 		url : Textures.baseurl+	"BodyAmbientOcclusion_MR_.jpg" 		, type:0},
 	{ id:"boot_ao", 		url : Textures.baseurl+	"BootAmbientOcclusion_MR_.jpg" 		, type:0},
-	{ id:"caisse_ao", 		url : Textures.baseurl+	"caisseGumAmbientOcclusion_MR_.jpg"	, type:0},
+	{ id:"lowgum_ao", 		url : Textures.baseurl+	"caisseGumAmbientOcclusion_MR_.jpg"	, type:0},
 	{ id:"rdoor_ao", 		url : Textures.baseurl+	"Door_BLAmbientOcclusion_MR_.jpg" 	, type:0},
 	{ id:"fdoor_ao", 		url : Textures.baseurl+	"Door_FLAmbientOcclusion_MR_.jpg" 	, type:0},
 	{ id:"grill_ao", 		url : Textures.baseurl+	"Grilll_F3CompleteMap.jpg" 	        , type:0},
+	{ id:"alloy1_ao", 		url : Textures.baseurl+	"allow1AmbientOcclusion_MR_.jpg"    , type:0},
+	{ id:"alloy2_ao", 		url : Textures.baseurl+	"allow2AmbientOcclusion_MR_.jpg"    , type:0},
+	{ id:"alloy3_ao", 		url : Textures.baseurl+	"allow3AmbientOcclusion_MR_.jpg"    , type:0},
+	{ id:"alloy4_ao", 		url : Textures.baseurl+	"allow4AmbientOcclusion_MR_.jpg"    , type:0},
+	{ id:"wheel_normals", 	url : Textures.baseurl+	"wheel_nomals.jpg"                  , type:0},
+	{ id:"env_studio_diff",	url : Textures.baseurl+	"env_studio_diff/map2diff_cubic.jpg", type:1},
 	{ id:"env_studio_ref", 	url : Textures.baseurl+	"env_studio_ref/studio_cubic.jpg" 	, type:1}
-]
+];
 
 Textures.getTex = function( id ) {
 	return Textures.texs[ id ];
@@ -34,7 +40,8 @@ Textures.load = function( completeCallback ) {
 
 	Textures.completeCallback = completeCallback;
 
-	for (var i = Textures.lib.length - 1; i >= 0; i--) {
+    for (var i = 0; i < Textures.lib.length; i++) {
+
 		libdata = Textures.lib[i];
 		id = libdata.id;
 
@@ -57,8 +64,9 @@ Textures.onImageLoaded = function( tex, libdata ) {
 	Textures.texs[libdata.id] = tex;
 	Textures.texs[libdata.id].needsUpdate = true;
 
-	if( Textures.batchCount == 0 ) 
+	if( Textures.batchCount == 0 ) {
 		Textures.completeCallback();
+    }
 }
 
 
@@ -95,7 +103,8 @@ __ImageLoader.prototype = {
  * @author pierre lepers
  */
 
-__CubeLoader = function () {};
+__CubeLoader = function () {
+};
 
 __CubeLoader.prototype = {
 
@@ -104,6 +113,9 @@ __CubeLoader.prototype = {
 
 	load : function ( data, callback ) {
 
+        var scope = this;
+        scope.toload = 5;
+
 		var image0 = new Image();
 		var image1 = new Image();
 		var image2 = new Image();
@@ -111,7 +123,6 @@ __CubeLoader.prototype = {
 		var image4 = new Image();
 		var image5 = new Image();
 
-		var toload = 5;
 
 		image0.onload = 
 		image1.onload = 
@@ -120,16 +131,14 @@ __CubeLoader.prototype = {
 		image4.onload = 
 		image5.onload = 
 		function () {
-			toload--;
-			if( toload == 0 ) {
-				complete();
+            scope.toload--;
+			if( scope.toload == 0 ) {
+			    callback( new THREE.Texture( [ image0, image1,  image2,  image3,  image4,  image5] ), data );
 			}
 		};
 
-		complete = function() {
-			callback( new THREE.Texture( [ image0, image1,  image2,  image3,  image4,  image5] ), data );
-		}
-		
+
+
 		var ppos = data.url.lastIndexOf( '.' );
 		var bu = data.url.substring( 0, ppos );
 		var ext = data.url.substring( ppos, data.url.length );

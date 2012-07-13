@@ -136,6 +136,7 @@
             <file name="objects/Car.js" />
 
             <file name="materials/Textures.js" />
+            <file name="materials/WheelGum.js" />
 			<file name="materials/CommonMaterials.js" />
 			<file name="materials/DefaultMaterial.js" />
 			<file name="materials/MaterialProvider.js" />
