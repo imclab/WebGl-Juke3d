@@ -37,14 +37,9 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	rim_vertex : [
-
-
+	rim_vertex :
         "vNormal = dot( normalize( cameraPosition - mPosition.xyz  ), normalize( nWorld.xyz ));"
-
-
-
-	].join("\n"),
+    ,
 
 	rim_pars_fragment: [
 
@@ -76,7 +71,7 @@ JUKEJS.ShaderChunk = {
 
 	rim_alpha_vertex : [
 
-		"vNormal = dot( normalize( cameraPosition - mPosition.xyz  ), normalize( nWorld.xyz ));"
+		"vNormal = dot( normalize( cameraPosition - mPosition.xyz ), normalize( nWorld.xyz ));"
 
 	].join("\n"),
 
@@ -93,8 +88,8 @@ JUKEJS.ShaderChunk = {
     rim_alpha_fragment : [
 
 
-        "float nclamped = pow( 1.0-clamp( vNormal, 0.0, 1.0 ), ra_pow );",
-        "gl_FragColor.w = mix( ra_in, ra_out, nclamped );"
+        "float nclamped = 1.0-clamp( vNormal, 0.0, 1.0 );",
+        "gl_FragColor.a = mix( ra_in, ra_out, nclamped );"
 
 
 	].join("\n"),
@@ -196,7 +191,7 @@ JUKEJS.ShaderLib = {
 		uniforms: THREE.UniformsUtils.merge( [
 
 			JUKEJS.UniformsLib[ "rimcolor" ],
-			THREE.UniformsLib[ "common" ],
+			THREE.UniformsLib[ "common" ]
 
 		] ),
 
@@ -280,11 +275,11 @@ JUKEJS.ShaderLib = {
 		fragmentShader: [
 			"uniform vec3 diffuse;",
 			"uniform float opacity;",
-			JUKEJS.ShaderChunk[ "rim_alpha_pars_fragment" ],
 			THREE.ShaderChunk[ "color_pars_fragment" ],
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
 			JUKEJS.ShaderChunk[ "reflexion_pars_fragment" ],
+			JUKEJS.ShaderChunk[ "rim_alpha_pars_fragment" ],
 
 			"void main() {",
 

@@ -25,7 +25,8 @@ LakMaterial = function ( oamap ) {
 //    uniforms[ "enableReflection" ].value = false;
 
     uniforms[ "lightMap" ].texture = oamap;
-    uniforms[ "envMap" ].texture = Textures.getTex( "env_studio_ref" );
+    this.envMap = uniforms[ "envMap" ].texture = Textures.getTex( "env_studio_ref" );
+    uniforms[ "combine" ].value = 0;
 //    uniforms[ "tNormal" ].texture = Textures.getTex( "wheel_normals" );
 //    uniforms[ "tDisplacement" ].texture = THREE.ImageUtils.loadTexture( "textures/normal/ninja/displacement.jpg" );
 //    uniforms[ "uDisplacementBias" ].value = - 0.428408 * scale;
@@ -46,12 +47,11 @@ LakMaterial = function ( oamap ) {
 //    uniforms[ "tCube" ].texture = reflectionCube;
 //    uniforms[ "uReflectivity" ].value = 0.1;
     var prefix_fragment = [
-        "#define USE_ENVMAP",
         "#define USE_LIGHTMAP", ""
     ].join("\n");
 
-//    console.log( "Fragment  \n"+ shader.fragmentShader );
-//    console.log( "Vertex  \n"+ shader.vertexShader );
+    console.log( "Fragment  \n"+ shader.fragmentShader );
+    console.log( "Vertex  \n"+ shader.vertexShader );
 
     var parameters = { fragmentShader: prefix_fragment + shader.fragmentShader, vertexShader:  prefix_fragment + shader.vertexShader, uniforms: uniforms, lights: false, fog: false };
 

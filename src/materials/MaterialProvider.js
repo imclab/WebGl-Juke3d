@@ -30,12 +30,12 @@ MaterialProvider.prototype = {
 		this._classeMap["Material #23"] =
 		this._classeMap["CAR_ALLOY1"] =
 		this._classeMap["CAR_ALU"] =
-		this._classeMap["CAR_GLASS_BK"] =
-		this._classeMap["CAR_GLASS"] =
+//		this._classeMap["CAR_GLASS_BK"] =
+//		this._classeMap["CAR_GLASS"] =
 		this._classeMap["GPS_ARW "] = DefaultMaterial;
 
-//		this._classeMap["CAR_GLASS_BK"] =
-//		this._classeMap["CAR_GLASS"] = GlassMaterial;
+		this._classeMap["CAR_GLASS_BK"] =
+		this._classeMap["CAR_GLASS"] = GlassMaterial;
 
 		this._classeMap["ENV_BOX"] = EnvBoxMaterial;
 
