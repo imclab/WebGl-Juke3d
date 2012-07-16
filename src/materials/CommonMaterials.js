@@ -2,10 +2,10 @@
  * @author pierre lepers
  */
 
-
-LakMaterial = function ( aoMap ) {
-	var p = { 
-		color: 0xffffff, 
+//
+BasicLakMaterial = function ( aoMap ) {
+	var p = {
+		color: 0xffffff,
 		lightMap : aoMap,
 		envMap : Textures.getTex( "env_studio_ref" ),
 		//combine : THREE.MultiplyOperation,
@@ -16,9 +16,11 @@ LakMaterial = function ( aoMap ) {
 	THREE.MeshBasicMaterial.call( this, p );
 };
 
-LakMaterial.prototype = new THREE.MeshBasicMaterial();
-LakMaterial.prototype.constructor = LakMaterial;
+BasicLakMaterial.prototype = new THREE.MeshBasicMaterial();
+BasicLakMaterial.prototype.constructor = BasicLakMaterial;
 
+
+var lakBaseclass = LakMaterial;
 
 
 /**
@@ -26,10 +28,10 @@ LakMaterial.prototype.constructor = LakMaterial;
  *                                                                    BodyMat
 */
 BodyMaterial = function (  ) {
-	LakMaterial.call( this, Textures.getTex( "body_ao" ) );
+	lakBaseclass.call( this, Textures.getTex( "body_ao" ) );
 };
 
-BodyMaterial.prototype = new LakMaterial();
+BodyMaterial.prototype = new lakBaseclass();
 BodyMaterial.prototype.constructor = BodyMaterial;
 
 /**
@@ -37,10 +39,10 @@ BodyMaterial.prototype.constructor = BodyMaterial;
  *                                                                    BootMat
 */
 BootMaterial = function (  ) {
-	LakMaterial.call( this, Textures.getTex( "boot_ao" ) );
+	lakBaseclass.call( this, Textures.getTex( "boot_ao" ) );
 };
 
-BootMaterial.prototype = new LakMaterial();
+BootMaterial.prototype = new lakBaseclass();
 BootMaterial.prototype.constructor = BootMaterial;
 
 /**
@@ -48,10 +50,10 @@ BootMaterial.prototype.constructor = BootMaterial;
  *                                                                    ArrMat
 */
 ArrMaterial = function (  ) {
-	LakMaterial.call( this, Textures.getTex( "arrlak_ao" ) );
+	lakBaseclass.call( this, Textures.getTex( "arrlak_ao" ) );
 };
 
-ArrMaterial.prototype = new LakMaterial();
+ArrMaterial.prototype = new lakBaseclass();
 ArrMaterial.prototype.constructor = ArrMaterial;
 
 
@@ -61,10 +63,10 @@ ArrMaterial.prototype.constructor = ArrMaterial;
  *                                                                    RdoorMat
 */
 RdoorMaterial = function (  ) {
-    LakMaterial.call( this, Textures.getTex( "rdoor_ao" ) );
+    lakBaseclass.call( this, Textures.getTex( "rdoor_ao" ) );
 };
 
-RdoorMaterial.prototype = new LakMaterial();
+RdoorMaterial.prototype = new lakBaseclass();
 RdoorMaterial.prototype.constructor = RdoorMaterial;
 
 /**
@@ -72,10 +74,10 @@ RdoorMaterial.prototype.constructor = RdoorMaterial;
  *                                                                    FdoorMat
 */
 FdoorMaterial = function (  ) {
-    LakMaterial.call( this, Textures.getTex( "fdoor_ao" ) );
+    lakBaseclass.call( this, Textures.getTex( "fdoor_ao" ) );
 };
 
-FdoorMaterial.prototype = new LakMaterial();
+FdoorMaterial.prototype = new lakBaseclass();
 FdoorMaterial.prototype.constructor = FdoorMaterial;
 
 /**
@@ -208,4 +210,24 @@ Alloy4Material.prototype = new THREE.MeshBasicMaterial();
 Alloy4Material.prototype.constructor = Alloy4Material;
 
 
+/*----------------------------------------------------------------------------------
+                                                                            EnvBoxMaterial
+ */
 
+EnvBoxMaterial = function ( ) {
+
+    var p = {
+		map: Textures.getTex( "envbox_diff" ),
+        lights : false
+	};
+
+	THREE.MeshBasicMaterial.call( this , p);
+
+};
+
+EnvBoxMaterial.prototype = new THREE.MeshBasicMaterial();
+EnvBoxMaterial.prototype.constructor = EnvBoxMaterial;
+
+EnvBoxMaterial.prototype.method = function() {
+	
+};

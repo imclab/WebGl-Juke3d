@@ -77,21 +77,41 @@ JUKEJS.Scene.prototype = {
 		this.scene.add( this.mesh );*/
 		var scope = this;
 
-
-		this.loader = new JUKEJS.AWDLoader();
-
-		this.loader.materialFactory = function( id ) {
+        var materialFactory = function( id ) {
 			return JUKEJS.materials.get( id );
 		}
 
-		this.loader.load( JUKEJS.Config.assetsPath + "3d/car/juke.AWD", 
-				function() {
-					console.log( "Scene.js onJukeLoaded" );
-                    scope.car = new Car( );
-                    scope.car.init( scope.loader.trunk );
-					scope.scene.add( scope.car.trunk );
-				}
-				);
+
+        /*----------------------------------------------------------------------------------
+                                                                                    Load car
+         */
+		var carLoader = new JUKEJS.AWDLoader();
+		carLoader.materialFactory = materialFactory;
+
+        var carLoaded = function() {
+            console.log( "Scene.js onJukeLoaded" );
+            scope.car = new Car( );
+            scope.car.init( carLoader.trunk );
+            scope.scene.add( scope.car.trunk );
+        }
+
+		carLoader.load( JUKEJS.Config.assetsPath + "3d/car/juke.AWD", carLoaded );
+
+         /*----------------------------------------------------------------------------------
+                                                                                    Load env
+         */
+
+        var envLoader = new JUKEJS.AWDLoader();
+		envLoader.materialFactory = materialFactory;
+
+        var envLoaded = function() {
+            console.log( "Scene.js onJukeLoaded" );
+            scope.env = new EnvBox( );
+            scope.env.init( envLoader.trunk );
+            scope.scene.add( scope.env.getEnv() );
+        }
+
+		envLoader.load( JUKEJS.Config.assetsPath + "3d/env/envbox.AWD", envLoaded );
 
 		this._buildLights();
 
@@ -107,23 +127,23 @@ JUKEJS.Scene.prototype = {
 		light1.position.z = 200;
 		this.scene.add( light1 );
 
-		light2 = new THREE.PointLight( 0xffffff, 2, 1000 );
-		light2.position.x = -200;
-		light2.position.y = 200;
-		light2.position.z = 200;
-		this.scene.add( light2 );
-
-		light3 = new THREE.PointLight( 0xffffff, 2, 1000 );
-		light3.position.x = -200;
-		light3.position.y = -200;
-		light3.position.z = 200;
-		this.scene.add( light3 );
-
-		light4 = new THREE.PointLight( 0xffffff, 2, 1000 );
-		light4.position.x = 200;
-		light4.position.y = 200;
-		light4.position.z = -200;
-		this.scene.add( light4 );
+//		light2 = new THREE.PointLight( 0xffffff, 2, 1000 );
+//		light2.position.x = -200;
+//		light2.position.y = 200;
+//		light2.position.z = 200;
+//		this.scene.add( light2 );
+//
+//		light3 = new THREE.PointLight( 0xffffff, 2, 1000 );
+//		light3.position.x = -200;
+//		light3.position.y = -200;
+//		light3.position.z = 200;
+//		this.scene.add( light3 );
+//
+//		light4 = new THREE.PointLight( 0xffffff, 2, 1000 );
+//		light4.position.x = 200;
+//		light4.position.y = 200;
+//		light4.position.z = -200;
+//		this.scene.add( light4 );
 
 	}
  

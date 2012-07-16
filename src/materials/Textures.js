@@ -20,6 +20,9 @@ Textures.lib = [
 	{ id:"alloy3_ao", 		url : Textures.baseurl+	"allow3AmbientOcclusion_MR_.jpg"    , type:0},
 	{ id:"alloy4_ao", 		url : Textures.baseurl+	"allow4AmbientOcclusion_MR_.jpg"    , type:0},
 	{ id:"wheel_normals", 	url : Textures.baseurl+	"wheel_nomals.jpg"                  , type:0},
+	{ id:"envbox_diff",     url : Textures.baseurl+	"envbox.jpg"                        , type:0},
+	{ id:"ground_map",      url : Textures.baseurl+	"groundcompletemap.jpg"             , type:0},
+	{ id:"wheel_ground_map",url : Textures.baseurl+	"wheelgroundcompletemap.jpg"        , type:0},
 	{ id:"env_studio_diff",	url : Textures.baseurl+	"env_studio_diff/map2diff_cubic.jpg", type:1},
 	{ id:"env_studio_ref", 	url : Textures.baseurl+	"env_studio_ref/studio_cubic.jpg" 	, type:1}
 ];

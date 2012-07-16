@@ -86,7 +86,7 @@ Car.prototype = {
 //        this._steerFL.rotation.y = Math.PI;
 //        this._steerFR.rotation.y = Math.PI;
 
-
+        this.addGroundShadow();
     },
 
     handleWheel : function( wheel ) {
@@ -96,12 +96,31 @@ Car.prototype = {
     enterObject : function( obj ) {
         if( obj instanceof THREE.Mesh ) {
 
-            obj.doubleSided = true;
+            obj.doubleSided = false;
 
             if( obj.name.indexOf( "iac" ) == 0 ) {
                 obj.visible = false;
             }
         }
+    },
+
+    addGroundShadow : function() {
+        if( this._ground === undefined) {
+
+             var p = {
+                color : 0xffffff,
+                map: Textures.getTex( "ground_map" ),
+                blending: THREE.MultiplyBlending,
+                depthWrite : false,
+                transparent : true
+            };
+
+	        var groundMat = new THREE.MeshBasicMaterial( p );
+
+            var geom = new THREE.PlaneGeometry( 500, 500, 1, 1 );
+            this._ground = new THREE.Mesh( geom, groundMat );
+        }
+        this.trunk.add( this._ground );
     }
 
 };
@@ -127,6 +146,8 @@ Wheel = function ( lib, high ) {
 
     this.add( this.essieu );
 
+    this.addShadow();
+
 };
 
 Wheel.prototype = new THREE.Object3D();
@@ -144,6 +165,28 @@ Wheel.prototype.setType = function( alloyIndex ) {
     this.essieu.add(this.alloy);
     this.alloy.rotation.y = Math.PI;
 };
+
+Wheel.prototype.addShadow = function() {
+    var p = {
+        color : 0xffffff,
+        map: Textures.getTex( "wheel_ground_map" ),
+        blending: THREE.MultiplyBlending,
+        depthWrite : false,
+        transparent : true
+    };
+
+    var shMat = new THREE.MeshBasicMaterial( p );
+
+    var geom = new THREE.PlaneGeometry( 110, 110, 1, 1 );
+    this.shadow = new THREE.Mesh( geom, shMat );
+
+    // p.rotationY = 90;
+    this.shadow.position.y = -21;
+    this.shadow.position.x = 8;
+
+    this.add(this.shadow);
+}
+
 
 /*----------------------------------------------------------------------------------
                                                                             CarLib

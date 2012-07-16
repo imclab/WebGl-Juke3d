@@ -37,8 +37,7 @@ WheelGum = function () {
     uniforms[ "uSpecularColor" ].value.convertGammaToLinear();
     uniforms[ "uAmbientColor" ].value.convertGammaToLinear();
 
-    console.log( "Fragment  \n"+ shader.fragmentShader );
-    console.log( "Vertex  \n"+ shader.vertexShader );
+
     var parameters = { fragmentShader: shader.fragmentShader, vertexShader: shader.vertexShader, uniforms: uniforms, lights: true, fog: false };
 
     THREE.ShaderMaterial.call( this, parameters );
