@@ -6,7 +6,7 @@
 
 JUKEJS.UniformsLib = {
 
-	rimcolor: {
+	'rimcolor': {
 
 		"rimColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
 		"rimPower" : { type: "f", value: 3.0 },
@@ -14,7 +14,14 @@ JUKEJS.UniformsLib = {
 
     },
 
-    rimalpha: {
+    'tone_mapping': {
+
+		"exposure" : { type: "f", value: 1.0 },
+		"gamma" : { type: "f", value: 1.0 }
+
+    },
+
+    'rimalpha': {
 
 		"ra_in" : { type: "f", value: 0.2 },
 		"ra_out" : { type: "f", value: 0.8 },
@@ -28,7 +35,7 @@ JUKEJS.ShaderChunk = {
 
 	// FOG
 
-	rim_pars_vertex: [
+	'rim_pars_vertex': [
 
 
 		"varying float vNormal;"
@@ -37,11 +44,11 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	rim_vertex :
+	'rim_vertex' :
         "vNormal = dot( normalize( cameraPosition - mPosition.xyz  ), normalize( nWorld.xyz ));"
     ,
 
-	rim_pars_fragment: [
+	'rim_pars_fragment': [
 
         "varying float vNormal;",
 
@@ -53,7 +60,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-    rim_fragment: [
+    'rim_fragment': [
 
 
         "float nclamped = pow( 1.0-clamp( vNormal, 0.0, 1.0 ), rimPower ) * rimStrength;",
@@ -65,17 +72,17 @@ JUKEJS.ShaderChunk = {
    /*----------------------------------------------------------------------------------
                                                                                 rim alpha
      */
-    rim_alpha_pars_vertex: [
+    'rim_alpha_pars_vertex': [
 		"varying float vNormal;"
 	].join("\n"),
 
-	rim_alpha_vertex : [
+	'rim_alpha_vertex' : [
 
 		"vNormal = dot( normalize( cameraPosition - mPosition.xyz ), normalize( nWorld.xyz ));"
 
 	].join("\n"),
 
-    rim_alpha_pars_fragment: [
+    'rim_alpha_pars_fragment': [
 
         "varying float vNormal;",
 
@@ -85,7 +92,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-    rim_alpha_fragment : [
+    'rim_alpha_fragment' : [
 
 
         "float nclamped = 1.0-clamp( vNormal, 0.0, 1.0 );",
@@ -97,7 +104,7 @@ JUKEJS.ShaderChunk = {
     /*----------------------------------------------------------------------------------
                                                                                 reflexion
      */
-    reflexion_pars_fragment: [
+    'reflexion_pars_fragment': [
 
 		"#ifdef USE_ENVMAP",
 
@@ -108,11 +115,18 @@ JUKEJS.ShaderChunk = {
 			"uniform float flipEnvMap;",
 			"uniform int combine;",
 
+            "#ifdef HDR_TONE_MAP",
+
+                "uniform float       exposure;",
+			    "uniform float       gamma;",
+
+            "#endif",
+
 		"#endif"
 
 	].join("\n"),
 
-	reflexion_fragment: [
+	'reflexion_fragment': [
 
 		"#ifdef USE_ENVMAP",
 
@@ -127,28 +141,46 @@ JUKEJS.ShaderChunk = {
 
 			"#endif",
 
+            "#ifdef HDR_DECODE",
+
+                "float exponent = ( cubeColor.a * 255.0 - 128.0 );",
+
+                "cubeColor.rgb = cubeColor.rgb * pow(2.0, exponent);",
+
+			"#endif",
+
+            "#ifdef HDR_TONE_MAP",
+
+//                "float Y = dot(vec4(0.30, 0.59, 0.11, 0.0), cubeColor);",
+//                "float YD = exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);",
+//                "cubeColor *= YD;",
+
+                "cubeColor.xyz = pow( exposure * cubeColor.xyz, vec3( gamma ) );",
+
+            "#endif",
+
 			"#ifdef GAMMA_INPUT",
 
 				"cubeColor.xyz *= cubeColor.xyz;",
 
 			"#endif",
 
-			"if ( combine == 1 ) {",
+            "#ifdef FRESNEL_ENVMAP",
 
-				"gl_FragColor.xyz = mix( gl_FragColor.xyz, cubeColor.xyz, reflectivity );",
+				"cubeColor.xyz *= cubeColor.xyz;",
 
-			"} else {",
+            "#else",
 
 				"gl_FragColor.xyz = gl_FragColor.xyz + ( cubeColor.xyz *reflectivity );",
 
-			"}",
+			"#endif",
 
 
 		"#endif"
 
 	].join("\n"),
 
-	reflexion_pars_vertex: [
+	'reflexion_pars_vertex': [
 
 		"#ifdef USE_ENVMAP",
 
@@ -161,7 +193,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	reflexion_vertex : [
+	'reflexion_vertex' : [
 
 		"#ifdef USE_ENVMAP",
 
@@ -190,16 +222,17 @@ JUKEJS.ShaderLib = {
 
 		uniforms: THREE.UniformsUtils.merge( [
 
-			JUKEJS.UniformsLib[ "rimcolor" ],
+			JUKEJS.UniformsLib.rimcolor,
+			JUKEJS.UniformsLib.tone_mapping,
 			THREE.UniformsLib[ "common" ]
 
 		] ),
 
 		vertexShader: [
-			JUKEJS.ShaderChunk[ "rim_pars_vertex" ],
+			JUKEJS.ShaderChunk.rim_pars_vertex,
 			THREE.ShaderChunk[ "map_pars_vertex" ],
 			THREE.ShaderChunk[ "lightmap_pars_vertex" ],
-			JUKEJS.ShaderChunk[ "reflexion_pars_vertex" ],
+			JUKEJS.ShaderChunk.reflexion_pars_vertex,
 
 			"void main() {",
 
@@ -207,8 +240,8 @@ JUKEJS.ShaderLib = {
 
 				THREE.ShaderChunk[ "map_vertex" ],
 				THREE.ShaderChunk[ "lightmap_vertex" ],
-				JUKEJS.ShaderChunk[ "reflexion_vertex" ],
-                JUKEJS.ShaderChunk[ "rim_vertex" ],
+				JUKEJS.ShaderChunk.reflexion_vertex,
+                JUKEJS.ShaderChunk.rim_vertex,
 				THREE.ShaderChunk[ "default_vertex" ],
 
 			"}"
@@ -218,22 +251,22 @@ JUKEJS.ShaderLib = {
 		fragmentShader: [
 			"uniform vec3 diffuse;",
 			"uniform float opacity;",
-            JUKEJS.ShaderChunk[ "rim_pars_fragment" ],
+            JUKEJS.ShaderChunk.rim_pars_fragment,
 			THREE.ShaderChunk[ "color_pars_fragment" ],
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
-			JUKEJS.ShaderChunk[ "reflexion_pars_fragment" ],
+			JUKEJS.ShaderChunk.reflexion_pars_fragment,
 
 			"void main() {",
 
 				"gl_FragColor = vec4( diffuse, opacity );",
 
-				JUKEJS.ShaderChunk[ "rim_fragment" ],
+				JUKEJS.ShaderChunk.rim_fragment,
 				THREE.ShaderChunk[ "map_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
-				JUKEJS.ShaderChunk[ "reflexion_fragment" ],
+				JUKEJS.ShaderChunk.reflexion_fragment,
 
 
 
@@ -248,15 +281,15 @@ JUKEJS.ShaderLib = {
 		uniforms: THREE.UniformsUtils.merge( [
 
 			THREE.UniformsLib[ "common" ],
-			JUKEJS.UniformsLib[ "rimalpha" ]
+			JUKEJS.UniformsLib.rimalpha
 
 		] ),
 
 		vertexShader: [
 			THREE.ShaderChunk[ "map_pars_vertex" ],
 			THREE.ShaderChunk[ "lightmap_pars_vertex" ],
-			JUKEJS.ShaderChunk[ "reflexion_pars_vertex" ],
-			JUKEJS.ShaderChunk[ "rim_alpha_pars_vertex" ],
+			JUKEJS.ShaderChunk.reflexion_pars_vertex,
+			JUKEJS.ShaderChunk.rim_alpha_pars_vertex,
 
 			"void main() {",
 
@@ -264,8 +297,8 @@ JUKEJS.ShaderLib = {
 
 				THREE.ShaderChunk[ "map_vertex" ],
 				THREE.ShaderChunk[ "lightmap_vertex" ],
-				JUKEJS.ShaderChunk[ "reflexion_vertex" ],
-				JUKEJS.ShaderChunk[ "rim_alpha_vertex" ],
+				JUKEJS.ShaderChunk.reflexion_vertex,
+				JUKEJS.ShaderChunk.rim_alpha_vertex,
 				THREE.ShaderChunk[ "default_vertex" ],
 
 			"}"
@@ -278,18 +311,18 @@ JUKEJS.ShaderLib = {
 			THREE.ShaderChunk[ "color_pars_fragment" ],
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
-			JUKEJS.ShaderChunk[ "reflexion_pars_fragment" ],
-			JUKEJS.ShaderChunk[ "rim_alpha_pars_fragment" ],
+			JUKEJS.ShaderChunk.reflexion_pars_fragment,
+			JUKEJS.ShaderChunk.rim_alpha_pars_fragment,
 
 			"void main() {",
 
 				"gl_FragColor = vec4( diffuse, opacity );",
-                JUKEJS.ShaderChunk[ "rim_alpha_fragment" ],
+                JUKEJS.ShaderChunk.rim_alpha_fragment,
 				THREE.ShaderChunk[ "map_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
-				JUKEJS.ShaderChunk[ "reflexion_fragment" ],
+				JUKEJS.ShaderChunk.reflexion_fragment,
 
 
 

@@ -24,7 +24,9 @@ Textures.lib = [
 	{ id:"ground_map",      url : Textures.baseurl+	"groundcompletemap.jpg"             , type:0},
 	{ id:"wheel_ground_map",url : Textures.baseurl+	"wheelgroundcompletemap.jpg"        , type:0},
 	{ id:"env_studio_diff",	url : Textures.baseurl+	"env_studio_diff/map2diff_cubic.jpg", type:1},
-	{ id:"env_studio_ref", 	url : Textures.baseurl+	"env_studio_ref/studio_cubic.jpg" 	, type:1}
+	{ id:"env_studio_ref", 	url : Textures.baseurl+	"env_studio_ref/studio_cubic.jpg" 	, type:1},
+	{ id:"hdr_png", 	    url : Textures.baseurl+	"hdr/CNIGHT_23_.png" 	            , type:1},
+	{ id:"hdr_ref", 	    url : Textures.baseurl+	"hdr/CNIGHT_23_.bin" 	            , type:2}
 ];
 
 Textures.getTex = function( id ) {
@@ -52,6 +54,8 @@ Textures.load = function( completeCallback ) {
 			iloader = new __ImageLoader();
 		else if( libdata.type == 1 )
 			iloader = new __CubeLoader();
+        else if( libdata.type == 2 )
+			iloader = new __HdrCubeLoader();
 
 		Textures.batchCount ++;
 
@@ -161,4 +165,89 @@ __CubeLoader.prototype = {
 
 	}
 }
+
+/**
+ * @author pierre lepers
+ */
+
+__HdrCubeLoader = function () {
+    this.numloaded = 0
+};
+
+__HdrCubeLoader.prototype = {
+
+	constructor : __HdrCubeLoader,
+
+
+	load : function ( data, callback ) {
+
+        this.toload = 5;
+        this.arrayBuffers = [];
+        this.callback = callback;
+        this.data = data;
+
+        var ppos = data.url.lastIndexOf( '.' );
+		var bu = data.url.substring( 0, ppos );
+		var ext = data.url.substring( ppos, data.url.length );
+
+        var urls = [];
+		urls.push( bu+"0"+ext );
+		urls.push( bu+"1"+ext );
+		urls.push( bu+"4"+ext );
+		urls.push( bu+"5"+ext );
+		urls.push( bu+"2"+ext );
+		urls.push( bu+"3"+ext );
+
+        var that = this;
+        for (var ii = 0; ii < urls.length; ++ii) {
+            var completion = function(faceIndex) {
+                return function(arrayBuffer, exception) {
+                    if (arrayBuffer) {
+                        that.arrayBuffers[faceIndex] = that.handleBuffer( arrayBuffer );
+                        that.toload--;
+                    }
+                    if( that.toload == 0 )
+                        that.complete();
+                }
+            }(ii);
+            iolib.loadArrayBuffer(  urls[ii], completion );
+        }
+
+    },
+
+    handleBuffer : function( arraybuffer ) {
+        // little endian to big endian
+        var tempArray = new Float32Array(arraybuffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
+        var data = new DataView(arraybuffer);
+        var len = tempArray.length;
+        for (var jj = 0; jj < len; ++jj) {
+            tempArray[jj] = data.getFloat32(jj * Float32Array.BYTES_PER_ELEMENT, true);
+        }
+
+        return tempArray;
+    },
+
+    complete : function () {
+
+        var size = Math.sqrt(this.arrayBuffers[0].byteLength / Float32Array.BYTES_PER_ELEMENT / 3);
+
+        this.callback(
+            new THREE.CubeDataTexture(
+                this.arrayBuffers,
+                size,
+                THREE.RGBFormat,
+                THREE.FloatType,
+                new THREE.UVMapping(),
+                THREE.ClampToEdgeWrapping,
+                THREE.ClampToEdgeWrapping,
+                THREE.NearestFilter,
+                THREE.NearestFilter
+
+            ),
+            this.data
+        );
+    }
+}
+
+
 

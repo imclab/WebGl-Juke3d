@@ -21,7 +21,8 @@ GlassMaterial = function ( ) {
     uniforms[ "envMap" ].value = 1;
 
     this.transparent = true;
-    this.envMap = uniforms[ "envMap" ].texture = Textures.getTex( "env_studio_ref" );
+//    this.envMap = uniforms[ "envMap" ].texture = Textures.getTex( "env_studio_ref" );
+    this.envMap = uniforms[ "envMap" ].texture = Textures.getTex( "hdr_ref" );
     uniforms[ "combine" ].value = 0;
 
     uniforms[ "diffuse" ].value.setHex( diffuse );

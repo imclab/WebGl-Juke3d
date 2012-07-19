@@ -20,6 +20,8 @@ JUKEJS.Scene = function( container ) {
 	this.renderer = new THREE.WebGLRenderer();
 	this.renderer.setClearColorHex( 0x000000, 1 );
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
+    // don't let renderer rescale hrd map
+	this.renderer.autoScaleCubemaps = false;
 
 	this.container.appendChild( this.renderer.domElement );
 

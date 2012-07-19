@@ -12,50 +12,75 @@ LakMaterial = function ( oamap ) {
     var rim = 0x2f0508;
     var rimpower = 0.68;
     var rimStrength = 1.32;
+    var exposure = 1.23;
+    var gamma = 1.53;
 
 
     var shader = JUKEJS.ShaderLib[ "carlak" ];
 //    var shader = THREE.ShaderLib[ "basic" ];
-    var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+    this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
 
-    uniforms[ "lightMap" ].value = 2;
-    uniforms[ "envMap" ].value = 1;
+    this.uniforms[ "lightMap" ].value = 2;
+    this.uniforms[ "envMap" ].value = 1;
 //    uniforms[ "enableDiffuse" ].value = false;
 //    uniforms[ "enableSpecular" ].value = false;
 //    uniforms[ "enableReflection" ].value = false;
 
-    uniforms[ "lightMap" ].texture = oamap;
-    this.envMap = uniforms[ "envMap" ].texture = Textures.getTex( "env_studio_ref" );
-    uniforms[ "combine" ].value = 0;
+    this.uniforms[ "lightMap" ].texture = oamap;
+//    this.envMap = uniforms[ "envMap" ].texture = Textures.getTex( "env_studio_ref" );
+//    this.envMap = this.uniforms[ "envMap" ].texture = Textures.getTex( "hdr_ref" );
+    this.envMap = this.uniforms[ "envMap" ].texture = Textures.getTex( "hdr_png" );
+    this.uniforms[ "combine" ].value = 0;
 //    uniforms[ "tNormal" ].texture = Textures.getTex( "wheel_normals" );
 //    uniforms[ "tDisplacement" ].texture = THREE.ImageUtils.loadTexture( "textures/normal/ninja/displacement.jpg" );
 //    uniforms[ "uDisplacementBias" ].value = - 0.428408 * scale;
 //    uniforms[ "uDisplacementScale" ].value = 2.436143 * scale;
 
-    uniforms[ "diffuse" ].value.setHex( diffuse );
+    this.uniforms[ "diffuse" ].value.setHex( diffuse );
 //    uniforms[ "ambient" ].value.setHex( ambient );
 
-    uniforms[ "rimColor" ].value.setHex( rim );
-    uniforms[ "rimPower" ].value = rimpower;
-    uniforms[ "rimStrength" ].value = rimStrength;
+    this.uniforms[ "rimColor" ].value.setHex( rim );
+    this.uniforms[ "rimPower" ].value = rimpower;
+    this.uniforms[ "rimStrength" ].value = rimStrength;
 
-    uniforms[ "reflectivity" ].value= 0.2;
-    uniforms[ "refractionRatio" ].value = 0.0;
+    this.uniforms[ "reflectivity" ].value= 0.24;
+    this.uniforms[ "refractionRatio" ].value = 0.0;
+
+
+    this.uniforms[ "exposure" ].value = exposure;
+    this.uniforms[ "gamma" ].value = gamma;
 
 
 
 //    uniforms[ "tCube" ].texture = reflectionCube;
 //    uniforms[ "uReflectivity" ].value = 0.1;
     var prefix_fragment = [
-        "#define USE_LIGHTMAP", ""
+        "#define HDR_DECODE",
+        "#define HDR_TONE_MAP",
+        "#define USE_LIGHTMAP",
+        ""
     ].join("\n");
 
     console.log( "Fragment  \n"+ shader.fragmentShader );
     console.log( "Vertex  \n"+ shader.vertexShader );
 
-    var parameters = { fragmentShader: prefix_fragment + shader.fragmentShader, vertexShader:  prefix_fragment + shader.vertexShader, uniforms: uniforms, lights: false, fog: false };
+    var parameters = { fragmentShader: prefix_fragment + shader.fragmentShader, vertexShader:  prefix_fragment + shader.vertexShader, uniforms: this.uniforms, lights: false, fog: false };
 
     THREE.ShaderMaterial.call( this, parameters );
+
+//    debug
+    var scope = this;
+    var onChange = function() {
+        scope.uniforms[ this.id ].value = this.value;
+        this.parentNode.getElementsByTagName("span")[0].innerHTML = ""+this.value;
+    }
+
+
+    document.getElementById( "reflectivity").addEventListener( "change", onChange );
+    document.getElementById( "rimPower").addEventListener( "change", onChange );
+    document.getElementById( "rimStrength").addEventListener( "change", onChange );
+    document.getElementById( "exposure").addEventListener( "change", onChange );
+    document.getElementById( "gamma").addEventListener( "change", onChange );
 
 };
 
