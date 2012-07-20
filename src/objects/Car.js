@@ -96,6 +96,10 @@ Car.prototype = {
     enterObject : function( obj ) {
         if( obj instanceof THREE.Mesh ) {
 
+            if( obj.material.name === "CAR_CBS" ) {
+                obj.geometry.computeTangents();
+            }
+
             obj.doubleSided = false;
 
             if( obj.name.indexOf( "iac" ) == 0 ) {

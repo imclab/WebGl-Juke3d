@@ -1,4 +1,8 @@
 //2
+
+JUKEJS.globalExposure = 0.18;
+JUKEJS.globalGamma = 0.6;
+
 JUKEJS.Scene = function( container ) {
 
 	this.container = container;
@@ -16,8 +20,10 @@ JUKEJS.Scene = function( container ) {
 	this.scene.add( this.camera );
 	
 	// renderer
-
-	this.renderer = new THREE.WebGLRenderer();
+    var p = {
+        antialias : true
+    }
+	this.renderer = new THREE.WebGLRenderer( p );
 	this.renderer.setClearColorHex( 0x000000, 1 );
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
     // don't let renderer rescale hrd map
