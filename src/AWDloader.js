@@ -441,7 +441,7 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 				tmparray = geom.vertices;
 
 				while (this._ptr < str_end) {
-					x = this.readF32();
+					x = -this.readF32();
 					y = this.readF32();
 					z = this.readF32();
 					tmparray.push( new THREE.Vector3(x, y, z) );
@@ -452,8 +452,8 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 			else if (str_type == 2) {
 				tmparray = geom.faces;
 				while (this._ptr < str_end) {
-					a = this.readU16();
 					b = this.readU16();
+					a = this.readU16();
 					c = this.readU16();
 					tmparray.push( new THREE.Face3( a+voffset, b+voffset, c+voffset, undefined, undefined, subs_parsed ) );
 				}
@@ -475,7 +475,7 @@ JUKEJS.AWDLoader.prototype.parseMeshData = function ( len ) {
 				
 
 				while (this._ptr < str_end) {
-					x = this.readF32();
+					x = -this.readF32();
 					y = this.readF32();
 					z = this.readF32();
 					vector = new THREE.Vector3( x, y, z);
@@ -579,7 +579,7 @@ JUKEJS.AWDLoader.prototype.parseMatrix4 = function ( ) {
 	e[11] = this.readF32();
 	// e[11] = 0.0;
 
-	e[12] = this.readF32();
+	e[12] = -this.readF32();
 	e[13] = this.readF32();
 	e[14] = this.readF32();
 	e[15] = this.readF32();

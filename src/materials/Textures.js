@@ -8,28 +8,35 @@ Textures.baseurl = "./assets/3d/tex/"
 Textures.batchCount = 0;
 
 Textures.lib = [
-	{ id:"arrlak_ao", 		url : Textures.baseurl+	"arr_lakAmbientOcclusion_MR_.jpg" 	, type:0},
-	{ id:"body_ao", 		url : Textures.baseurl+	"BodyAmbientOcclusion_MR_.jpg" 		, type:0},
-	{ id:"boot_ao", 		url : Textures.baseurl+	"BootAmbientOcclusion_MR_.jpg" 		, type:0},
-	{ id:"lowgum_ao", 		url : Textures.baseurl+	"caisseGumAmbientOcclusion_MR_.jpg"	, type:0},
-	{ id:"rdoor_ao", 		url : Textures.baseurl+	"Door_BLAmbientOcclusion_MR_.jpg" 	, type:0},
-	{ id:"fdoor_ao", 		url : Textures.baseurl+	"Door_FLAmbientOcclusion_MR_.jpg" 	, type:0},
-	{ id:"grill_ao", 		url : Textures.baseurl+	"Grilll_F3CompleteMap.jpg" 	        , type:0},
-	{ id:"alloy1_ao", 		url : Textures.baseurl+	"allow1AmbientOcclusion_MR_.jpg"    , type:0},
-	{ id:"alloy2_ao", 		url : Textures.baseurl+	"allow2AmbientOcclusion_MR_.jpg"    , type:0},
-	{ id:"alloy3_ao", 		url : Textures.baseurl+	"allow3AmbientOcclusion_MR_.jpg"    , type:0},
-	{ id:"alloy4_ao", 		url : Textures.baseurl+	"allow4AmbientOcclusion_MR_.jpg"    , type:0},
-	{ id:"wheel_normals", 	url : Textures.baseurl+	"wheel_nomals.jpg"                  , type:0},
-	{ id:"cbs_normals", 	url : Textures.baseurl+	"cbs_normals.jpg"                    , type:0},
-	{ id:"envbox_diff",     url : Textures.baseurl+	"envbox.jpg"                        , type:0},
-	{ id:"ground_map",      url : Textures.baseurl+	"groundcompletemap.jpg"             , type:0},
-	{ id:"wheel_ground_map",url : Textures.baseurl+	"wheelgroundcompletemap.jpg"        , type:0},
-	{ id:"env_studio_diff",	url : Textures.baseurl+	"env_studio_diff/map2diff_cubic.jpg", type:1},
-	{ id:"env_studio_ref", 	url : Textures.baseurl+	"env_studio_ref/studio_cubic.jpg" 	, type:1},
-//	{ id:"hdr_png", 	    url : Textures.baseurl+	"hdr/CNIGHT_31_.png" 	            , type:1},
-	{ id:"hdr_png", 	    url : Textures.baseurl+	"hdr/rnl_.png" 	            , type:1},
-	{ id:"hdr_rad_png", 	url : Textures.baseurl+	"hdr/CNIGHT_31_rad_.png" 	    , type:1},
-	{ id:"hdr_ref", 	    url : Textures.baseurl+	"hdr/CNIGHT_23_.bin" 	            , type:2}
+	{ id:"arrlak_ao", 		    url : Textures.baseurl+	    "arr_lakAmbientOcclusion_MR_.jpg" 	    , type:0},
+	{ id:"body_ao", 		    url : Textures.baseurl+	    "BodyAmbientOcclusion_MR_.jpg" 		    , type:0},
+	{ id:"boot_ao", 		    url : Textures.baseurl+	    "BootAmbientOcclusion_MR_.jpg" 		    , type:0},
+	{ id:"lowgum_ao", 		    url : Textures.baseurl+	    "caisseGumAmbientOcclusion_MR_.jpg"	    , type:0},
+	{ id:"rdoor_ao", 		    url : Textures.baseurl+	    "Door_BLAmbientOcclusion_MR_.jpg" 	    , type:0},
+	{ id:"fdoor_ao", 		    url : Textures.baseurl+	    "Door_FLAmbientOcclusion_MR_.jpg" 	    , type:0},
+
+	{ id:"grill_ao", 		    url : Textures.baseurl+	    "Grilll_F3CompleteMap.jpg" 	            , type:0},
+
+	{ id:"alloy1_ao", 		    url : Textures.baseurl+	    "allow1AmbientOcclusion_MR_.jpg"        , type:0},
+	{ id:"alloy2_ao", 		    url : Textures.baseurl+	    "allow2AmbientOcclusion_MR_.jpg"        , type:0},
+	{ id:"alloy3_ao", 		    url : Textures.baseurl+	    "allow3AmbientOcclusion_MR_.jpg"        , type:0},
+	{ id:"alloy4_ao", 		    url : Textures.baseurl+	    "allow4AmbientOcclusion_MR_.jpg"        , type:0},
+
+	{ id:"wheel_normals", 	    url : Textures.baseurl+	    "wheel_nomals.jpg"                      , type:0},
+	{ id:"cbs_normals", 	    url : Textures.baseurl+	    "cbs_normals.jpg"                       , type:0},
+	{ id:"envbox_diff",         url : Textures.baseurl+	    "envbox.jpg"                            , type:0},
+	{ id:"ground_map",          url : Textures.baseurl+	    "groundcompletemap.jpg"                 , type:0},
+	{ id:"wheel_ground_map",    url : Textures.baseurl+	    "wheelgroundcompletemap.jpg"            , type:0},
+	{ id:"juke_tex",            url : Textures.baseurl+	    "juke_tex.jpg"                          , type:0},
+
+	{ id:"ground_leaves",       url : Textures.baseurl+	    "dead_leaves.jpg"                       , type:0},
+
+	{ id:"env_studio_diff",	    url : Textures.baseurl+	    "env_studio_diff/map2diff_cubic.jpg"    , type:1},
+	{ id:"env_studio_ref", 	    url : Textures.baseurl+	    "env_studio_ref/studio_cubic.jpg" 	    , type:1},
+//	{ id:"hdr_png", 	        url : Textures.baseurl+	    "hdr/CNIGHT_31_.png" 	                , type:1},
+	{ id:"hdr_png", 	        url : Textures.baseurl+	    "hdr/rnl_.png" 	                        , type:1},
+	{ id:"hdr_rad_png", 	    url : Textures.baseurl+	    "hdr/CNIGHT_31_rad_.png" 	            , type:1}
+//	{ id:"hdr_ref", 	        url : Textures.baseurl+	    "hdr/CNIGHT_23_.bin" 	                , type:2}
 ];
 
 Textures.getTex = function( id ) {

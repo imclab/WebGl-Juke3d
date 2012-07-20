@@ -140,10 +140,6 @@ JUKEJS.ShaderChunk = {
             "#ifdef NORMAL_MAP",
 
                 "uniform sampler2D tNormal;",
-
-            "#endif",
-
-            "#ifdef NORMAL_MAP",
         	    "varying vec2 vUv;",
         	    "varying vec3 vTangent;",
 				"varying vec3 vBinormal;",
@@ -200,9 +196,12 @@ JUKEJS.ShaderChunk = {
 //                "float Y = dot(vec4(0.30, 0.59, 0.11, 0.0), cubeColor);",
 //                "float YD = exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);",
 //                "cubeColor *= YD;",
+                "#ifdef USE_CAVITY",
+                    "cubeColor.xyz = pow( exposure * aocav.g * cubeColor.xyz, vec3( gamma ) );",
+                "#else",
+                    "cubeColor.xyz = pow( exposure * cubeColor.xyz, vec3( gamma ) );",
 
-                "cubeColor.xyz = pow( exposure * cubeColor.xyz, vec3( gamma ) );",
-
+                "#endif",
 
 
             "#endif",
@@ -329,7 +328,49 @@ JUKEJS.ShaderChunk = {
 	'natural_vertex' : [
         "nrm = mat3( objectMatrix[ 0 ].xyz, objectMatrix[ 1 ].xyz, objectMatrix[ 2 ].xyz ) * normal;"
 
-	].join("\n")
+	].join("\n"),
+
+     ao_cavity_pars_fragment: [
+
+        "#ifdef USE_LIGHTMAP",
+
+            "varying vec2 vUv2;",
+            "uniform sampler2D lightMap;",
+
+        "#endif"
+
+    ].join("\n"),
+
+    ao_cavity_pars_vertex: [
+
+        "#ifdef USE_LIGHTMAP",
+
+            "varying vec2 vUv2;",
+
+        "#endif"
+
+    ].join("\n"),
+
+    ao_cavity_fragment: [
+        "#define USE_CAVITY",
+        "#ifdef USE_LIGHTMAP",
+            "vec3 aocav = texture2D( lightMap, vUv2 ).xyz;",
+            "aocav.g = (aocav.g - .5) *5.0;",
+            "gl_FragColor.rgb = gl_FragColor.rgb * aocav.r;",
+
+        "#endif"
+
+    ].join("\n"),
+
+    ao_cavity_vertex: [
+
+        "#ifdef USE_LIGHTMAP",
+
+            "vUv2 = uv2;",
+
+        "#endif"
+
+    ].join("\n")
 
 
 }
@@ -352,7 +393,7 @@ JUKEJS.ShaderLib = {
 			JUKEJS.ShaderChunk.rim_pars_vertex,
             JUKEJS.ShaderChunk.natural_pars_vertex,
 			THREE.ShaderChunk[ "map_pars_vertex" ],
-			THREE.ShaderChunk[ "lightmap_pars_vertex" ],
+			JUKEJS.ShaderChunk.ao_cavity_pars_vertex,
 			JUKEJS.ShaderChunk.reflexion_pars_vertex,
 
 			"void main() {",
@@ -360,7 +401,7 @@ JUKEJS.ShaderLib = {
 				"vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
 
 				THREE.ShaderChunk[ "map_vertex" ],
-				THREE.ShaderChunk[ "lightmap_vertex" ],
+                JUKEJS.ShaderChunk.ao_cavity_vertex,
 				JUKEJS.ShaderChunk.reflexion_vertex,
                 JUKEJS.ShaderChunk.rim_vertex,
                 JUKEJS.ShaderChunk.natural_vertex,
@@ -377,7 +418,7 @@ JUKEJS.ShaderLib = {
             JUKEJS.ShaderChunk.natural_pars_fragment,
 			THREE.ShaderChunk[ "color_pars_fragment" ],
 			THREE.ShaderChunk[ "map_pars_fragment" ],
-			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+            JUKEJS.ShaderChunk.ao_cavity_pars_fragment,
 			JUKEJS.ShaderChunk.reflexion_pars_fragment,
 
 			"void main() {",
@@ -388,7 +429,7 @@ JUKEJS.ShaderLib = {
                 JUKEJS.ShaderChunk.natural_fragment,
 				THREE.ShaderChunk[ "map_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
-				THREE.ShaderChunk[ "lightmap_fragment" ],
+				JUKEJS.ShaderChunk.ao_cavity_fragment,
 				THREE.ShaderChunk[ "color_fragment" ],
 				JUKEJS.ShaderChunk.reflexion_fragment,
 
@@ -509,7 +550,241 @@ JUKEJS.ShaderLib = {
 
 		].join("\n")
 
+	},
+
+    'reflective_phong': {
+
+		uniforms: THREE.UniformsUtils.merge( [
+
+			THREE.UniformsLib[ "common" ],
+			THREE.UniformsLib[ "fog" ],
+			THREE.UniformsLib[ "lights" ],
+			JUKEJS.UniformsLib.tone_mapping,
+			THREE.UniformsLib[ "shadowmap" ],
+
+			{
+				"ambient"  : { type: "c", value: new THREE.Color( 0xffffff ) },
+				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
+				"specular" : { type: "c", value: new THREE.Color( 0x111111 ) },
+				"shininess": { type: "f", value: 30 },
+				"wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
+			}
+
+		] ),
+
+		vertexShader: [
+
+			"varying vec3 vViewPosition;",
+			"varying vec3 vNormal;",
+
+			THREE.ShaderChunk[ "map_pars_vertex" ],
+            JUKEJS.ShaderChunk.ao_cavity_pars_vertex,
+			JUKEJS.ShaderChunk.reflexion_pars_vertex,
+			THREE.ShaderChunk[ "lights_phong_pars_vertex" ],
+			THREE.ShaderChunk[ "color_pars_vertex" ],
+			THREE.ShaderChunk[ "skinning_pars_vertex" ],
+			THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+			THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+
+			"void main() {",
+
+				"vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+
+				THREE.ShaderChunk[ "map_vertex" ],
+                JUKEJS.ShaderChunk.ao_cavity_vertex,
+			    JUKEJS.ShaderChunk.reflexion_vertex,
+				THREE.ShaderChunk[ "color_vertex" ],
+
+				"#ifndef USE_ENVMAP",
+
+					"vec4 mPosition = objectMatrix * vec4( position, 1.0 );",
+
+				"#endif",
+
+				"vViewPosition = -mvPosition.xyz;",
+
+				THREE.ShaderChunk[ "morphnormal_vertex" ],
+
+				"vNormal = transformedNormal;",
+
+				THREE.ShaderChunk[ "lights_phong_vertex" ],
+				THREE.ShaderChunk[ "skinning_vertex" ],
+				THREE.ShaderChunk[ "morphtarget_vertex" ],
+				THREE.ShaderChunk[ "default_vertex" ],
+				THREE.ShaderChunk[ "shadowmap_vertex" ],
+
+			"}"
+
+		].join("\n"),
+
+		fragmentShader: [
+
+			"uniform vec3 diffuse;",
+			"uniform float opacity;",
+
+			"uniform vec3 ambient;",
+			"uniform vec3 emissive;",
+			"uniform vec3 specular;",
+			"uniform float shininess;",
+
+			THREE.ShaderChunk[ "color_pars_fragment" ],
+			THREE.ShaderChunk[ "map_pars_fragment" ],
+            JUKEJS.ShaderChunk.ao_cavity_pars_fragment,
+			JUKEJS.ShaderChunk.reflexion_pars_fragment,
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
+			THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+
+			"void main() {",
+
+				"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
+
+				THREE.ShaderChunk[ "map_fragment" ],
+				THREE.ShaderChunk[ "alphatest_fragment" ],
+
+				THREE.ShaderChunk[ "lights_phong_fragment" ],
+
+				JUKEJS.ShaderChunk.ao_cavity_fragment,
+				THREE.ShaderChunk[ "color_fragment" ],
+			    JUKEJS.ShaderChunk.reflexion_fragment,
+				THREE.ShaderChunk[ "shadowmap_fragment" ],
+
+				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+
+				THREE.ShaderChunk[ "fog_fragment" ],
+
+			"}"
+
+		].join("\n")
+    },
+
+
+    'hdrcube': {
+
+        uniforms : THREE.UniformsUtils.merge( [
+
+            JUKEJS.UniformsLib.tone_mapping,
+
+            {
+                "tCube": { type: "t", value: 1, texture: null },
+                "tFlip": { type: "f", value: -1 }
+            }
+        ]),
+
+        vertexShader: [
+
+            "varying vec3 vViewPosition;",
+
+            "void main() {",
+
+                "vec4 mPosition = objectMatrix * vec4( position, 1.0 );",
+                "vViewPosition = cameraPosition - mPosition.xyz;",
+
+                "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+            "}"
+
+        ].join("\n"),
+
+        fragmentShader: [
+
+            "uniform samplerCube tCube;",
+            "uniform float tFlip;",
+            "uniform float exposure;",
+            "uniform float gamma;",
+
+            "varying vec3 vViewPosition;",
+
+            "void main() {",
+
+                "vec3 wPos = cameraPosition - vViewPosition;",
+                "vec4 cubeColor = textureCube( tCube, vec3( tFlip * wPos.x, wPos.yz ) );",
+
+                "float exponent = ( cubeColor.a * 255.0 - 128.0 );",
+                "cubeColor.rgb = cubeColor.rgb * pow(2.0, exponent);",
+                "gl_FragColor.xyz = pow( exposure * cubeColor.xyz, vec3( gamma ) );",
+                "gl_FragColor.a = 1.0;",
+
+            "}"
+
+        ].join("\n")
+
+    },
+
+    'ground': {
+
+		uniforms: THREE.UniformsUtils.merge( [
+
+			THREE.UniformsLib[ "common" ],
+			THREE.UniformsLib[ "fog" ],
+			THREE.UniformsLib[ "shadowmap" ]
+
+		] ),
+
+		vertexShader: [
+
+			THREE.ShaderChunk[ "map_pars_vertex" ],
+			THREE.ShaderChunk[ "lightmap_pars_vertex" ],
+			THREE.ShaderChunk[ "envmap_pars_vertex" ],
+			THREE.ShaderChunk[ "color_pars_vertex" ],
+			THREE.ShaderChunk[ "skinning_pars_vertex" ],
+			THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+			THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+
+			"void main() {",
+
+				"vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+
+				THREE.ShaderChunk[ "map_vertex" ],
+				THREE.ShaderChunk[ "lightmap_vertex" ],
+				THREE.ShaderChunk[ "envmap_vertex" ],
+				THREE.ShaderChunk[ "color_vertex" ],
+				THREE.ShaderChunk[ "skinning_vertex" ],
+				THREE.ShaderChunk[ "morphtarget_vertex" ],
+				THREE.ShaderChunk[ "default_vertex" ],
+				THREE.ShaderChunk[ "shadowmap_vertex" ],
+
+			"}"
+
+		].join("\n"),
+
+		fragmentShader: [
+
+			"uniform vec3 diffuse;",
+			"uniform float opacity;",
+
+			THREE.ShaderChunk[ "color_pars_fragment" ],
+			THREE.ShaderChunk[ "map_pars_fragment" ],
+			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+			THREE.ShaderChunk[ "envmap_pars_fragment" ],
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
+			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+
+			"void main() {",
+
+				"gl_FragColor = vec4( diffuse, opacity );",
+
+				THREE.ShaderChunk[ "map_fragment" ],
+				THREE.ShaderChunk[ "alphatest_fragment" ],
+				THREE.ShaderChunk[ "lightmap_fragment" ],
+				THREE.ShaderChunk[ "color_fragment" ],
+				THREE.ShaderChunk[ "envmap_fragment" ],
+				THREE.ShaderChunk[ "shadowmap_fragment" ],
+
+				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+
+				THREE.ShaderChunk[ "fog_fragment" ],
+
+                "vec2 uu = (vUv.xy - 3.0) / 3.0;",
+                "float dist = sqrt( uu.x * uu.x + uu.y * uu.y );",
+                "gl_FragColor.a = 2.2 - (dist*2.2);",
+
+			"}"
+
+		].join("\n")
+
 	}
+
 }
 
 /*----------------------------------------------------------------------------------

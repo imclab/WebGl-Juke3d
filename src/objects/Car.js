@@ -80,11 +80,21 @@ Car.prototype = {
         this._steerFL.add( this._flWheel );
         this._steerFR.add( this._frWheel );
 
-//        flWheel.rotationY = 180;
-//        rlWheel.rotationY = 180;
 
-//        this._steerFL.rotation.y = Math.PI;
-//        this._steerFR.rotation.y = Math.PI;
+        /*---------------------------------------------------------
+                                                       Handle Doors
+         */
+
+        var flDoor = this.tree.get("pag");
+        var rlDoor = this.tree.get("prg");
+        var frDoor = this.tree.get("pad");
+        var rrDoor = this.tree.get("prd");
+
+        this._flDoorHeper = new Door( flDoor, this.tree.get("pag_move_g" ), "pag", true );
+        this._frDoorHeper = new Door( frDoor, this.tree.get("pad_move_g" ), "pad", false );
+        this._rlDoorHeper = new Door( rlDoor, this.tree.get("prg_move_g" ), "prg", true );
+        this._rrDoorHeper = new Door( rrDoor, this.tree.get("prd_move_g" ), "prd", false );
+
 
         this.addGroundShadow();
     },
@@ -186,11 +196,37 @@ Wheel.prototype.addShadow = function() {
 
     // p.rotationY = 90;
     this.shadow.position.y = -21;
-    this.shadow.position.x = 8;
+    this.shadow.position.x = -8;
 
     this.add(this.shadow);
 }
 
+
+/*----------------------------------------------------------------------------------
+                                                                            Doors
+ */
+
+Door = function ( group, move, id, b ) {
+    this.group = group;
+    this.move = move;
+    this.move.visible = false;
+    this.id = id;
+    b = b || true;
+
+    this.move.parent.remove( this.move );
+
+    this.arrow = JUKEJS.utils.findChild( this.group, id+"_garw"  );
+
+    this.group.remove( this.arrow );
+
+};
+
+Door.prototype = {
+
+	constructor: Door
+
+
+};
 
 /*----------------------------------------------------------------------------------
                                                                             CarLib

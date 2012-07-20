@@ -9,12 +9,12 @@ GlassMaterial = function ( ) {
 
     var ambient = 0x000000;
     var diffuse = 0x000000;
-    var ra_in = 0.2;
-    var ra_out = 0.8;
+    var ra_in = 0.7;
+    var ra_out = 0.9;
     var ra_pow = 1.0;
 
-    var exposure = 2.0*JUKEJS.globalExposure;
-    var gamma = 1.73 * JUKEJS.globalGamma;
+    var exposure = new GlobalParam( 2.0, "globalExposure" );
+    var gamma = new GlobalParam( 1.73, "globalGamma");
 
     var shader = JUKEJS.ShaderLib[ "carglass" ];
     this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
@@ -33,7 +33,7 @@ GlassMaterial = function ( ) {
     this.uniforms[ "ra_out" ].value = ra_out;
     this.uniforms[ "ra_pow" ].value = ra_pow;
 
-    this.uniforms[ "reflectivity" ].value= 0.2;
+    this.uniforms[ "reflectivity" ].value= 0.0;
 
 
     this.uniforms[ "exposure" ].value = exposure;
@@ -62,6 +62,14 @@ GlassMaterial = function ( ) {
 
     JUKEJS.NO_UV_ShaderMaterial.call( this, parameters );
 
+    var scope = this;
+    var onChange = function() {
+        scope.uniforms[ this.id ].value = this.value;
+        this.parentNode.getElementsByTagName("span")[0].innerHTML = ""+this.value;
+    }
+
+//    document.getElementById( "exposure").addEventListener( "change", onChange );
+//    document.getElementById( "gamma").addEventListener( "change", onChange );
 };
 
 GlassMaterial.prototype = new JUKEJS.NO_UV_ShaderMaterial();

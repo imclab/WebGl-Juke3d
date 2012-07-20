@@ -18,16 +18,24 @@ JUKEJS.Scene = function( container ) {
 	this.camera.position.z = 175;
 
 	this.scene.add( this.camera );
-	
+
+
+
+	this.sceneCube = new THREE.Scene();
+
+	this.cameraCube = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 5000 );
+	this.sceneCube.add( this.cameraCube );
+
 	// renderer
     var p = {
-        antialias : true
+        antialias : false
     }
 	this.renderer = new THREE.WebGLRenderer( p );
 	this.renderer.setClearColorHex( 0x000000, 1 );
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
     // don't let renderer rescale hrd map
 	this.renderer.autoScaleCubemaps = false;
+    this.renderer.autoClear = false;
 
 	this.container.appendChild( this.renderer.domElement );
 
@@ -73,7 +81,12 @@ JUKEJS.Scene.prototype = {
 //		if( this.car.trunk )
 //		    this.car.trunk.rotation.y += 0.02;
 
+
 		this.controls.update( );
+
+        this.cameraCube.rotation.copy( this.camera.rotation );
+
+		this.renderer.render( this.sceneCube, this.cameraCube );
 		this.renderer.render( this.scene, this.camera );
 	},
 
@@ -116,10 +129,49 @@ JUKEJS.Scene.prototype = {
             console.log( "Scene.js onJukeLoaded" );
             scope.env = new EnvBox( );
             scope.env.init( envLoader.trunk );
-            scope.scene.add( scope.env.getEnv() );
+            //scope.scene.add( scope.env.getEnv() );
         }
 
 		envLoader.load( JUKEJS.Config.assetsPath + "3d/env/envbox.AWD", envLoaded );
+
+        /*----------------------------------------------------------------------------------
+                                                                                    skybox
+         */
+
+        var shader = THREE.ShaderUtils.lib[ "cube" ];
+        shader.uniforms[ "tCube" ].texture = Textures.getTex( "hdr_png" );
+
+        var material = new HdrSkyboxMaterial();
+
+        var mesh = new THREE.Mesh( new THREE.CubeGeometry( 5000, 5000, 5000 ), material );
+        mesh.flipSided = true;
+        this.sceneCube.add( mesh );
+
+        /*----------------------------------------------------------------------------------
+                                                                                    ground leaves
+         */
+
+
+
+        Textures.getTex( "ground_leaves" ).wrapT = THREE.RepeatWrapping;
+        Textures.getTex( "ground_leaves" ).wrapS = THREE.RepeatWrapping;
+
+
+        var gmat = new GroundMat()
+
+        var ground = new THREE.Mesh( new THREE.PlaneGeometry(1000, 1000, 1, 1 ), gmat );
+        ground.position.y = -5;
+        for (var i = 0; i < ground.geometry.faceVertexUvs[0].length; i++) {
+            ground.geometry.faceVertexUvs[0][i][0].u *= 6;
+            ground.geometry.faceVertexUvs[0][i][0].v *= 6;
+            ground.geometry.faceVertexUvs[0][i][1].u *= 6;
+            ground.geometry.faceVertexUvs[0][i][1].v *= 6;
+            ground.geometry.faceVertexUvs[0][i][2].u *= 6;
+            ground.geometry.faceVertexUvs[0][i][2].v *= 6;
+            ground.geometry.faceVertexUvs[0][i][3].u *= 6;
+            ground.geometry.faceVertexUvs[0][i][3].v *= 6;
+        }
+        this.scene.add( ground );
 
 		this._buildLights();
 
@@ -156,4 +208,18 @@ JUKEJS.Scene.prototype = {
 	}
  
 
+}
+
+
+/*----------------------------------------------------------------------------------
+                                                                            UTILS
+ */
+
+
+JUKEJS.utils = {};
+
+JUKEJS.utils.findChild = function( obj, name ) {
+    for (var i = 0; i < obj.children.length; i++) {
+        if( obj.children[i].name == name ) return obj.children[i];
+    }
 }

@@ -22,8 +22,23 @@ JUKEJS._boot = function() {
 }
 
 JUKEJS._imagesLoaded = function() {
-	
+
+
 	var scene = new JUKEJS.Scene( container );
 	scene.play();
+
+    // gui controls
+
+    function onExposureChange() {
+        JUKEJS.globalExposure = this.value;
+    }
+    function onGammaChange() {
+        JUKEJS.globalGamma = this.value;
+    }
+
+    document.getElementById( "exposure").addEventListener( "change", onExposureChange );
+    document.getElementById( "gamma").addEventListener( "change", onGammaChange );
+    document.getElementById( "exposure").value = JUKEJS.globalExposure;
+    document.getElementById( "gamma").value = JUKEJS.globalGamma;
 
 }

@@ -160,12 +160,11 @@ Alloy1Material = function (  ) {
     console.log( "Alloy1Material Alloy1Material ref "+ Textures.getTex( "env_studio_ref" ) );
 
     var p = {
-        color: 0x606060,
+        color: 0xffffff,
         lightMap : Textures.getTex( "alloy1_ao" ),
         envMap : Textures.getTex( "env_studio_diff" ),
-        combine : THREE.MixOperation,
-        reflectivity: 0.7,
-        refractionRatio : 0.2
+        combine : THREE.MultiplyOperation,
+        reflectivity: 1
     };
     THREE.MeshBasicMaterial.call( this, p );
 };
@@ -230,4 +229,53 @@ EnvBoxMaterial.prototype.constructor = EnvBoxMaterial;
 
 EnvBoxMaterial.prototype.method = function() {
 	
+};
+
+/*----------------------------------------------------------------------------------
+                                                                            JukeTex
+ */
+
+JukeTex = function ( ) {
+
+    var p = {
+		map: Textures.getTex( "juke_tex" ),
+        lights : false
+	};
+
+	THREE.MeshBasicMaterial.call( this , p );
+
+};
+
+JukeTex.prototype = new THREE.MeshBasicMaterial();
+JukeTex.prototype.constructor = JukeTex;
+
+JukeTex.prototype.method = function() {
+
+};
+
+
+/*----------------------------------------------------------------------------------
+                                                                            GroundMat
+ */
+
+GroundMat = function ( ) {
+
+    var shader = JUKEJS.ShaderLib[ "ground" ];
+    this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+
+    this.uniforms[ "map" ].value = 1;
+    this.map = this.uniforms[ "map" ].texture = Textures.getTex( "ground_leaves" ) ;
+
+
+    var parameters = { fragmentShader: shader.fragmentShader, vertexShader:  shader.vertexShader, uniforms: this.uniforms, lights: false, fog: false, transparent : true };
+
+	THREE.ShaderMaterial.call( this, parameters );
+
+};
+
+GroundMat.prototype = new THREE.ShaderMaterial();
+GroundMat.prototype.constructor = GroundMat;
+
+GroundMat.prototype.method = function() {
+
 };

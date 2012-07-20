@@ -13,10 +13,8 @@ MaterialProvider.prototype = {
 		this._matDict = {};
 
 		this._classeMap["DEFAULT_GREY"] = 
-		this._classeMap["juke_tex"] = 
 		this._classeMap["CAR_CBS"] =
 		this._classeMap["Juke_LOGO"] =
-		this._classeMap["CAR_GLASS_RED"] =
 
 
 		this._classeMap["Kar_CAR_PAINT_int"] =
@@ -30,7 +28,13 @@ MaterialProvider.prototype = {
 		this._classeMap["CAR_ALU"] =
 //		this._classeMap["CAR_GLASS_BK"] =
 //		this._classeMap["CAR_GLASS"] =
+
+		this._classeMap["Juke_LOGO"] = ChromeMaterial;
+
 		this._classeMap["GPS_ARW "] = DefaultMaterial;
+
+		this._classeMap["juke_tex"] = JukeTex;
+
 
 		this._classeMap["CAR_CHR"] = ChromeMaterial;
 
@@ -39,12 +43,14 @@ MaterialProvider.prototype = {
 		this._classeMap["CAR_GLASS_BK"] =
 		this._classeMap["CAR_GLASS"] = GlassMaterial;
 
+		this._classeMap["CAR_GLASS_RED"] =
 		this._classeMap["CAR_GLASS_LT"] = CarGlassLtMaterial;
 
 		this._classeMap["ENV_BOX"] = EnvBoxMaterial;
 
 		this._classeMap["CAR_WHEEL"] = WheelGum;
 
+//		this._classeMap["CAR_ALLOY1"] = AlloyTestMaterial;
 		this._classeMap["CAR_ALLOY1"] = Alloy1Material;
 		this._classeMap["CAR_ALLOY2"] = Alloy2Material;
 		this._classeMap["CAR_ALLOY3"] = Alloy3Material;
@@ -54,7 +60,8 @@ MaterialProvider.prototype = {
 		this._classeMap["BLACK"] = DefaultBlackMaterial;
 		this._classeMap["CAR_LOW_GUM"] = LowGumMaterial;
 
-		this._classeMap["Grill_CAR_PAINT"] = GrillMaterial;
+//		this._classeMap["Grill_CAR_PAINT"] = GrillMaterial;
+		this._classeMap["Grill_CAR_PAINT"] = ReflectiveGumMaterial;
 		this._classeMap["DLP_CAR_PAINT"] = FdoorMaterial;
 		this._classeMap["DLZ_CAR_PAINT"] = RdoorMaterial;
 		this._classeMap["Hai_CAR_PAINT"] = BootMaterial;
@@ -77,3 +84,4 @@ MaterialProvider.prototype.createMaterial = function( id ) {
 };
 
 JUKEJS.materials = new MaterialProvider();
+
