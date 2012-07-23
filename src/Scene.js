@@ -1,7 +1,7 @@
 //2
 
-JUKEJS.globalExposure = 0.18;
-JUKEJS.globalGamma = 0.6;
+JUKEJS["globalExposure"] = 0.18;
+JUKEJS["globalGamma"] = 0.6;
 
 JUKEJS.Scene = function( container ) {
 

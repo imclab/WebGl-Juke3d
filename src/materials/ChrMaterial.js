@@ -15,8 +15,8 @@ ChrMaterial = function ( ) {
     var ambient = 0x0;
 //    var diffuse = 0xb3001b;
     var diffuse = 0x040404;
-    var exposure = new GlobalParam( 2.27, "globalExposure" );
-    var gamma = new GlobalParam( 0.96, "globalGamma" );
+    var exposure =  new GlobalParam( 2.27, "globalExposure" );
+    var gamma =     new GlobalParam( 0.96, "globalGamma" );
 
 
     var shader = JUKEJS.ShaderLib[ "chrome" ];
@@ -82,8 +82,8 @@ ChromeMaterial = function ( ) {
     var ambient = 0x0;
 //    var diffuse = 0xb3001b;
     var diffuse = 0x000000;
-    var exposure = 4.11 * JUKEJS.globalExposure;;
-    var gamma = 1.5 * JUKEJS.globalGamma;
+    var exposure =     new GlobalParam( 4.11, "globalExposure" );
+    var gamma =        new GlobalParam( 1.5 , "globalGamma" );
 
 
     var shader = JUKEJS.ShaderLib[ "chrome" ];

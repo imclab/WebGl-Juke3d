@@ -6,7 +6,7 @@
 
 JUKEJS.UniformsLib = {
 
-	'rimcolor': {
+	rimcolor: {
 
 		"rimColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
 		"rimPower" : { type: "f", value: 3.0 },
@@ -15,14 +15,14 @@ JUKEJS.UniformsLib = {
     },
 
 
-    'tone_mapping': {
+    tone_mapping: {
 
 		"exposure" : { type: "f", value: 1.0 },
 		"gamma" : { type: "f", value: 1.0 }
 
     },
 
-    'rimalpha': {
+    rimalpha: {
 
 		"ra_in" : { type: "f", value: 0.2 },
 		"ra_out" : { type: "f", value: 0.8 },
@@ -30,21 +30,21 @@ JUKEJS.UniformsLib = {
 
     },
 
-    'natural' : {
+    natural : {
         "radMap" : { type: "t", value: 0, texture: null }
     },
 
-    'normalmap': {
+    normalmap: {
         "tNormal" : { type: "t", value: 0, texture: null }
     }
-}
+};
 
 
 JUKEJS.ShaderChunk = {
 
 	// FOG
 
-	'rim_pars_vertex': [
+	rim_pars_vertex: [
 
 
 		"varying float vNormal;"
@@ -53,11 +53,11 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	'rim_vertex' :
+	rim_vertex :
         "vNormal = dot( normalize( cameraPosition - mPosition.xyz  ), normalize( nWorld.xyz ));"
     ,
 
-	'rim_pars_fragment': [
+	rim_pars_fragment: [
 
         "varying float vNormal;",
 
@@ -69,7 +69,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-    'rim_fragment': [
+    rim_fragment: [
 
 
         "float nclamped = pow( 1.0-clamp( vNormal, 0.0, 1.0 ), rimPower ) * rimStrength;",
@@ -81,17 +81,17 @@ JUKEJS.ShaderChunk = {
    /*----------------------------------------------------------------------------------
                                                                                 rim alpha
      */
-    'rim_alpha_pars_vertex': [
+    rim_alpha_pars_vertex: [
 		"varying float vNormal;"
 	].join("\n"),
 
-	'rim_alpha_vertex' : [
+	rim_alpha_vertex : [
 
 		"vNormal = dot( normalize( cameraPosition - mPosition.xyz ), normalize( nWorld.xyz ));"
 
 	].join("\n"),
 
-    'rim_alpha_pars_fragment': [
+    rim_alpha_pars_fragment: [
 
         "varying float vNormal;",
 
@@ -101,7 +101,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-    'rim_alpha_fragment' : [
+    rim_alpha_fragment : [
 
 
         "float nclamped = 1.0-clamp( vNormal, 0.0, 1.0 );",
@@ -113,7 +113,7 @@ JUKEJS.ShaderChunk = {
     /*----------------------------------------------------------------------------------
                                                                                 reflexion
      */
-    'reflexion_pars_fragment': [
+    reflexion_pars_fragment: [
 
 		"#ifdef USE_ENVMAP",
 
@@ -150,7 +150,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	'reflexion_fragment': [
+	reflexion_fragment: [
 
 		"#ifdef USE_ENVMAP",
 
@@ -229,7 +229,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	'reflexion_pars_vertex': [
+	reflexion_pars_vertex: [
 
 		"#ifdef USE_ENVMAP",
 
@@ -270,7 +270,7 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	'reflexion_vertex' : [
+	reflexion_vertex : [
 
 		"#ifdef USE_ENVMAP",
 
@@ -300,14 +300,14 @@ JUKEJS.ShaderChunk = {
     /*----------------------------------------------------------------------------------
                                                                                 natural
      */
-    'natural_pars_fragment': [
+    natural_pars_fragment: [
 
         "uniform samplerCube radMap;",
         "varying vec3 nrm;"
 
 	].join("\n"),
 
-	'natural_fragment': [
+	natural_fragment: [
 
         "vec4 Creflect = textureCube(radMap, nrm);",
         "float exp = ( Creflect.a * 255.0 - 128.0 );",
@@ -318,14 +318,14 @@ JUKEJS.ShaderChunk = {
 
 	].join("\n"),
 
-	'natural_pars_vertex': [
+	natural_pars_vertex: [
 
         "varying vec3 nrm;"
 
 
 	].join("\n"),
 
-	'natural_vertex' : [
+	natural_vertex : [
         "nrm = mat3( objectMatrix[ 0 ].xyz, objectMatrix[ 1 ].xyz, objectMatrix[ 2 ].xyz ) * normal;"
 
 	].join("\n"),
@@ -373,7 +373,7 @@ JUKEJS.ShaderChunk = {
     ].join("\n")
 
 
-}
+};
 
 JUKEJS.ShaderLib = {
 
@@ -785,7 +785,7 @@ JUKEJS.ShaderLib = {
 
 	}
 
-}
+};
 
 /*----------------------------------------------------------------------------------
                                                                 NO_UV_ShaderMaterial

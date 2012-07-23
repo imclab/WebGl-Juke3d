@@ -31,6 +31,7 @@ HdrSkyboxMaterial = function ( ) {
     }
 
 
+
 //    document.getElementById( "exposure").addEventListener( "change", onChange );
 //    document.getElementById( "gamma").addEventListener( "change", onChange );
 
